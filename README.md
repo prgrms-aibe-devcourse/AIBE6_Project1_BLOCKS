@@ -40,7 +40,12 @@ src/
 └── utils/                      # 날짜, 포맷 등 유틸 함수
 ```
 
+</br>
 # 프로젝트 실행 방법
 npm i
 </br>
 npm run dev
+
+</br>
+#설치한 패키지
+npm install class-variance-authority

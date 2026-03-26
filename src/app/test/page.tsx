@@ -67,7 +67,7 @@ export default function Test() {
       is_liked: false,
       replies: [],
     }
-    setComments([...comments, newComment])
+    setComments((prev) => [...prev, newComment])
   }
 
   const handleReply = (parentId: string, text: string) => {

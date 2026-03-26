@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { Comment } from '@/type/comment'
 import { useEffect, useState } from 'react'
 
-export default function Test() {
+export default function Comment() {
   const [comments, setComments] = useState<Comment[]>([])
   const [loading, setLoading] = useState(true)
 

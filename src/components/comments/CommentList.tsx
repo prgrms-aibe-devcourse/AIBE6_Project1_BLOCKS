@@ -1,12 +1,6 @@
+import { Comment } from '@/type/comment'
 import { useEffect, useState } from 'react'
 import { FiHeart, FiMessageSquare } from 'react-icons/fi'
-
-interface Comment {
-  id: string
-  created_at: string
-  content: string
-  user_name: string
-}
 
 export default function CommentList({ comments }: { comments: Comment[] }) {
   const [isMounted, setIsMounted] = useState(false)

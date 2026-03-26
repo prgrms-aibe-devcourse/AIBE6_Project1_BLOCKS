@@ -28,6 +28,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+        />
+      </head>
       <body className="min-h-screen flex flex-col">
         <Navbar />
         <main className="flex-1">

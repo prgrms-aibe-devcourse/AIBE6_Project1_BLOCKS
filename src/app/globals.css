@@ -1,26 +1,137 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
 @import "tailwindcss";
+@reference "tailwindcss"; 
 
+/* ─────────────────────────────────────────────
+   FestaPlan Design Tokens : 색깔, 글꼴, 여백, 그림자 등 디자인 변수 지정
+   ───────────────────────────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* ── Brand Colors ── */
+  --color-primary:        #F26565;   /* Coral Red – CTA, active states */
+  --color-primary-light:  #FDEAEA;   /* Tint – hover backgrounds, tags */
+  --color-primary-dark:   #D94F4F;   /* Pressed / dark variant */
+  --color-secondary:      #FBBF24;   /* Amber Yellow – social login, badges */
+
+  /* ── Neutral Scale ── */
+  --color-neutral-50:     #FAFAFA;
+  --color-neutral-100:    #F5F5F5;
+  --color-neutral-200:    #EBEBEB;
+  --color-neutral-300:    #D9D9D9;
+  --color-neutral-400:    #ABABAB;
+  --color-neutral-500:    #737373;
+  --color-neutral-700:    #404040;
+  --color-neutral-900:    #171717;
+
+  /* ── Semantic ── */
+  --color-bg:             #FFFFFF;
+  --color-surface:        #FAFAFA;
+  --color-border:         #EBEBEB;
+  --color-text:           #171717;
+  --color-text-muted:     #737373;
+  --color-star:           #F59E0B;
+
+  /* ── Typography ── */
+  --font-sans:    "Pretendard", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: "Pretendard", -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* ── Spacing / Radius ── */
+  --radius-sm:   6px;
+  --radius-md:   12px;
+  --radius-lg:   16px;
+  --radius-pill: 9999px;
+
+  /* ── Shadows ── */
+  --shadow-card:       0 2px 12px rgba(0, 0, 0, 0.07);
+  --shadow-card-hover: 0 6px 24px rgba(242, 101, 101, 0.16);
+  --shadow-nav:        0 1px 0 rgba(0, 0, 0, 0.06);
+  --shadow-modal:      0 12px 48px rgba(0, 0, 0, 0.14);
+
+  /* ── Transitions ── */
+  --transition-fast:   120ms ease;
+  --transition-base:   200ms ease;
+  --transition-slow:   320ms ease;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ─────────────────────────────────────────────
+   Base Reset & Globals
+   ───────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+  min-height: 100vh;
+} 
+
+/* ─────────────────────────────────────────────
+   Typography Helpers : 기본 HTML 태그 스타일 지정
+   ───────────────────────────────────────────── */
+@layer base { 
+  h1 { @apply text-2xl font-bold tracking-tight; }
+  h2 { @apply text-xl font-semibold tracking-tight; }
+  h3 { @apply text-base font-semibold; }
+  p  { @apply text-sm leading-relaxed; }
+  a  { @apply text-inherit no-underline; }
+}
+
+/* ─────────────────────────────────────────────
+   Utility Classes: 자주 쓰는 스타일을 미리 만들어 둔 것
+   ───────────────────────────────────────────── */
+@layer utilities {
+  .text-primary   { color: var(--color-primary); }
+  .bg-primary     { background-color: var(--color-primary); }
+  .bg-primary-light { background-color: var(--color-primary-light); }
+  .border-primary { border-color: var(--color-primary); }
+  .text-muted     { color: var(--color-text-muted); }
+
+  .surface        { background-color: var(--color-surface); }
+  .card-shadow    { box-shadow: var(--shadow-card); }
+  .card-shadow-hover { box-shadow: var(--shadow-card-hover); }
+
+  .transition-base { transition: all var(--transition-base); }
+  .transition-fast { transition: all var(--transition-fast); }
+}
+
+/* ─────────────────────────────────────────────
+   Scrollbar : 스크롤바 커스텀
+   ───────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--color-neutral-100); }
+::-webkit-scrollbar-thumb {
+  background: var(--color-neutral-300);
+  border-radius: var(--radius-pill);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--color-primary); }
+
+/* ─────────────────────────────────────────────
+   Skeleton Loading : 로딩 중일 때 표시되는 회색 박스
+   ───────────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-neutral-100) 25%,
+    var(--color-neutral-200) 50%,
+    var(--color-neutral-100) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-wave 1.4s infinite;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes skeleton-wave {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }

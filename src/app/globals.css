@@ -1,26 +1,181 @@
-@import "tailwindcss";
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
+@import 'tailwindcss';
+@reference "tailwindcss";
+
+/* ─────────────────────────────────────────────
+   FestaPlan Design Tokens : 색깔, 글꼴, 여백, 그림자 등 디자인 변수 지정
+   ───────────────────────────────────────────── */
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* ── Brand Colors ── */
+  --color-primary: #f26565; /* 메인 색상. 버튼, 링크, 강조 요소 */
+  --color-primary-light: #fdeaea; /* 메인 색상 연한 버전. 태그 배경, hover 배경 */
+  --color-primary-dark: #d94f4f; /* 메인 색상 진한 버전. 버튼 누를 때 */
+  --color-secondary: #fbbf24; /* 보조 색상. 카카오 버튼, 노란 뱃지 */
+
+  /* ── Neutral Scale ── */
+  --color-neutral-50: #fafafa; /* 거의 흰색. 페이지 배경 */
+  --color-neutral-100: #f5f5f5; /* 연한 회색. 비활성 배경 */
+  --color-neutral-200: #ebebeb; /* 카드 테두리, 구분선 */
+  --color-neutral-300: #d9d9d9; /* 스크롤바, 비활성 별점 */
+  --color-neutral-400: #ababab; /* placeholder 텍스트 */
+  --color-neutral-500: #737373; /* 보조 텍스트 (날짜, 위치) */
+  --color-neutral-700: #404040; /* 중간 텍스트 */
+  --color-neutral-900: #171717; /* 본문 제목, 주요 텍스트 */
+
+  /* ── Semantic ── */
+  --color-bg: #ffffff; /* 페이지 기본 배경 */
+  --color-surface: #fafafa; /* 섹션 배경 (약간 회색) */
+  --color-border: #ebebeb; /* 전역 테두리 색상 */
+  --color-text: #171717; /* 기본 텍스트 색상 */
+  --color-text-muted: #737373; /* 흐린 텍스트 */
+  --color-star: #f59e0b; /* 별점 노란색 */
+
+  /* ── Typography ── */
+  --font-sans: 'Pretendard', sans-serif; /* 기본 폰트 */
+  --font-display: 'Pretendard', sans-serif; /* 제목용 폰트 */
+
+  /* ── Spacing / Radius ── */
+  --radius-sm: 6px; /* 작은 모서리 (뱃지) */
+  --radius-md: 12px; /* 카드 모서리 */
+  --radius-lg: 16px; /* 큰 카드, 모달 */
+  --radius-pill: 9999px; /* 완전한 알약형 (버튼, 태그) */
+
+  /* ── Shadows ── */
+  --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.07); /* 기본 카드 그림자 */
+  --shadow-card-hover: 0 6px 24px rgba(242, 101, 101, 0.16); /* 카드 hover 그림자 */
+  --shadow-nav: 0 1px 0 rgba(0, 0, 0, 0.06); /* 네비게이션 하단 선 */
+  --shadow-modal: 0 12px 48px rgba(0, 0, 0, 0.14); /* 모달 그림자 */
+
+  /* ── Transitions ── */
+  --transition-fast: 120ms ease; /* 빠른 반응 (hover) */
+  --transition-base: 200ms ease; /* 기본 애니메이션 */
+  --transition-slow: 320ms ease; /* 느린 애니메이션 (카드 hover) */
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ─────────────────────────────────────────────
+   Base Reset & Globals
+   ───────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ─────────────────────────────────────────────
+   Typography Helpers : 기본 HTML 태그 스타일 지정
+   ───────────────────────────────────────────── */
+@layer base {
+  h1 {
+    @apply text-2xl font-bold tracking-tight;
+  }
+  h2 {
+    @apply text-xl font-semibold tracking-tight;
+  }
+  h3 {
+    @apply text-base font-semibold;
+  }
+  p {
+    @apply text-sm leading-relaxed;
+  }
+  a {
+    @apply text-inherit no-underline;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   Utility Classes: 자주 쓰는 스타일을 미리 만들어 둔 것
+   ───────────────────────────────────────────── */
+@layer utilities {
+  .text-primary {
+    color: var(--color-primary);
+  }
+  .bg-primary {
+    background-color: var(--color-primary);
+  }
+  .bg-primary-light {
+    background-color: var(--color-primary-light);
+  }
+  .border-primary {
+    border-color: var(--color-primary);
+  }
+  .text-muted {
+    color: var(--color-text-muted);
+  }
+
+  .surface {
+    background-color: var(--color-surface);
+  }
+  .card-shadow {
+    box-shadow: var(--shadow-card);
+  }
+  .card-shadow-hover {
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  .transition-base {
+    transition: all var(--transition-base);
+  }
+  .transition-fast {
+    transition: all var(--transition-fast);
+  }
+}
+
+/* ─────────────────────────────────────────────
+   Scrollbar : 스크롤바 커스텀
+   ───────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-neutral-100);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-neutral-300);
+  border-radius: var(--radius-pill);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}
+
+/* ─────────────────────────────────────────────
+   Skeleton Loading : 로딩 중일 때 표시되는 회색 박스
+   ───────────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-neutral-100) 25%,
+    var(--color-neutral-200) 50%,
+    var(--color-neutral-100) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-wave 1.4s infinite;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes skeleton-wave {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }

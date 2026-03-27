@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 
 export default function Step1() {
   const router = useRouter()
@@ -76,7 +76,11 @@ export default function Step1() {
                     >
                       <span
                         className="material-symbols-outlined text-3xl mb-2 text-[#FF7676]"
-                        style={isSelected ? { fontVariationSettings: "'FILL' 1" } : {}}
+                        style={
+                          isSelected
+                            ? { fontVariationSettings: "'FILL' 1" }
+                            : {}
+                        }
                       >
                         {item.icon}
                       </span>

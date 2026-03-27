@@ -68,12 +68,18 @@ function modifyFesta() {
             <option value="과학">과학</option>
             <option value="종교">종교</option>
           </select>
-          <input
-            type="text"
+          <select
             id="FestaLocation"
-            placeholder="지역을 입력하세요"
-            className="border border-black"
-          />
+            className="bg-transparent rounded-xl border-none text-sm font-bold px-4 py-2 focus:ring-0 cursor-pointer"
+          >
+            <option value="서울">서울</option>
+            <option value="경기">경기도</option>
+            <option value="강원">강원도</option>
+            <option value="전라">전라도</option>
+            <option value="경상">경상도</option>
+            <option value="제주">제주도</option>
+            <option value="충청">충청도</option>
+          </select>
           <input type="date" id="Festasdate" className="border border-black" />
           <input type="date" id="Festafdate" className="border border-black" />
           <button>축제 수정</button>

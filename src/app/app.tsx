@@ -48,7 +48,7 @@ function App() {
   ) => {
     const newDate = new Date(ddate)
     const datel = newDate.toISOString()
-    if (op1 != '모두') {
+    if (op1 != '모두' && loc != '모두') {
       const { data, error } = await supabase
         .from('festivals')
         .select('*')
@@ -62,13 +62,38 @@ function App() {
       } else {
         setFestivalName(data)
       }
-    } else {
+    } else if (op1 != '모두' && loc == '모두') {
+      const { data, error } = await supabase
+        .from('festivals')
+        .select('*')
+        .gte('ffd', datel)
+        .lte('fsd', datel)
+        .like('option1', `%${op1}%`)
+        .like('fname', `%${ffname}%`)
+      if (error) {
+        console.log(error)
+      } else {
+        setFestivalName(data)
+      }
+    } else if (op1 == '모두' && loc != '모두') {
       const { data, error } = await supabase
         .from('festivals')
         .select('*')
         .gte('ffd', datel)
         .lte('fsd', datel)
         .like('dl', `%${loc}%`)
+        .like('fname', `%${ffname}%`)
+      if (error) {
+        console.log(error)
+      } else {
+        setFestivalName(data)
+      }
+    } else if (op1 == '모두' && loc == '모두') {
+      const { data, error } = await supabase
+        .from('festivals')
+        .select('*')
+        .gte('ffd', datel)
+        .lte('fsd', datel)
         .like('fname', `%${ffname}%`)
       if (error) {
         console.log(error)

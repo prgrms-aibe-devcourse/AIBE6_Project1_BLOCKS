@@ -3,10 +3,10 @@
 import CommentInput from '@/components/comments/CommentInput'
 import CommentItem from '@/components/comments/CommentItem'
 import { supabase } from '@/lib/supabase'
-import { Comment } from '@/type/comment'
+import { Comment, DbComment } from '@/type/comment'
 import { useEffect, useState } from 'react'
 
-export default function Comment() {
+export default function CommentPage() {
   const [comments, setComments] = useState<Comment[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -16,7 +16,7 @@ export default function Comment() {
       .from('comments')
       .select(
         `
-        id, created_at, content, user_id, review_id, parent_id, like_count,
+        comment_id, created_at, contents, user_id, review_id, parent_id, like_count,
         user ( user_name )
       `,
       )
@@ -29,27 +29,27 @@ export default function Comment() {
     }
 
     const formatted: Comment[] = (data ?? [])
-      .filter((c) => !c.parent_id)
-      .map((c) => ({
-        id: String(c.id),
+      .filter((c: DbComment) => !c.parent_id)
+      .map((c: DbComment) => ({
+        id: String(c.comment_id),
         created_at: c.created_at,
-        content: c.content,
-        user_id: String(c.user_id),
+        content: c.contents,
+        user_id: c.user_id,
         review_id: String(c.review_id),
         parent_id: c.parent_id ? String(c.parent_id) : undefined,
-        user_name: c.user?.user_name ?? '익명',
+        user_name: c.user?.[0]?.user_name ?? '익명',
         like_count: c.like_count ?? 0,
         is_liked: false,
         replies: (data ?? [])
-          .filter((r) => r.parent_id === c.id)
-          .map((r) => ({
-            id: String(r.id),
+          .filter((r: DbComment) => r.parent_id === c.comment_id)
+          .map((r: DbComment) => ({
+            id: String(r.comment_id),
             created_at: r.created_at,
-            content: r.content,
-            user_id: String(r.user_id),
+            content: r.contents,
+            user_id: r.user_id,
             review_id: String(r.review_id),
             parent_id: String(r.parent_id),
-            user_name: r.user?.user_name ?? '익명',
+            user_name: r.user?.[0]?.user_name ?? '익명',
             like_count: r.like_count ?? 0,
             is_liked: false,
             replies: [],
@@ -68,8 +68,8 @@ export default function Comment() {
   async function handleNewMainComment(text: string) {
     const { error } = await supabase.from('comments').insert({
       content: text,
-      user_id: 1, // TODO: 로그인 구현되면 실제 유저 id로 교체
-      review_id: 1, // TODO: 실제 리뷰 id로 교체
+      user_id: 1,
+      review_id: 1,
     })
 
     if (error) {
@@ -84,8 +84,8 @@ export default function Comment() {
   async function handleReply(parentId: string, text: string) {
     const { error } = await supabase.from('comments').insert({
       content: text,
-      user_id: 1, // TODO: 로그인 구현되면 실제 유저 id로 교체
-      review_id: 1, // TODO: 실제 리뷰 id로 교체
+      user_id: 1,
+      review_id: 1,
       parent_id: Number(parentId),
     })
 
@@ -131,7 +131,7 @@ export default function Comment() {
   // 좋아요 (로컬 state만 변경)
   function handleLike(id: string) {
     setComments((prev) =>
-      prev.map((c) => {
+      prev.map((c: Comment) => {
         if (c.id === id) {
           return {
             ...c,

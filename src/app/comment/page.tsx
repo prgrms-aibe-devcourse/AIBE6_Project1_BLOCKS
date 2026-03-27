@@ -29,7 +29,7 @@ export default function CommentPage() {
     }
 
     const formatted: Comment[] = (data ?? [])
-      .filter((co) => !co.parent_id)
+      .filter((c) => !c.parent_id)
       .map((c) => ({
         id: String(c.id),
         created_at: c.created_at,

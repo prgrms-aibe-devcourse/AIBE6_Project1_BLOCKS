@@ -70,12 +70,12 @@ export default function Step1() {
                       className={`flex flex-col items-center justify-center p-6 rounded-2xl border-2 cursor-pointer transition-all active:scale-95 group 
                         ${
                           isSelected
-                            ? 'bg-[#FF7676]/10 border-[#FF7676]'
-                            : 'bg-zinc-50 border-transparent hover:border-[#FF7676]/30'
+                            ? 'bg-[#f26565]/10 border-primary'
+                            : 'bg-zinc-50 border-transparent hover:border-[#f26565]/40'
                         }`}
                     >
                       <span
-                        className="material-symbols-outlined text-3xl mb-2 text-[#FF7676]"
+                        className="material-symbols-outlined text-3xl mb-2 text-primary"
                         style={
                           isSelected
                             ? { fontVariationSettings: "'FILL' 1" }
@@ -86,7 +86,7 @@ export default function Step1() {
                       </span>
                       <span
                         className={`text-sm font-bold ${
-                          isSelected ? 'text-[#FF7676]' : ''
+                          isSelected ? 'text-primary' : ''
                         }`}
                       >
                         {item.label}
@@ -110,7 +110,7 @@ export default function Step1() {
                       className={`flex-1 py-4 px-6 rounded-2xl font-bold transition-all active:scale-95 
                         ${
                           isSelected
-                            ? 'bg-[#FF7676] text-white shadow-lg shadow-[#FF7676]/20'
+                            ? 'bg-primary text-white shadow-lg shadow-[#f26565]/20'
                             : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'
                         }`}
                     >
@@ -134,7 +134,7 @@ export default function Step1() {
                       className={`flex-1 py-3 px-6 rounded-full font-bold transition-all active:scale-95
                         ${
                           isSelected
-                            ? 'bg-[#FF7676] text-white shadow-lg shadow-[#FF7676]/20'
+                            ? 'bg-primary text-white shadow-lg shadow-[#f26565]/20'
                             : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'
                         }`}
                     >
@@ -147,15 +147,15 @@ export default function Step1() {
             <div className="pt-6">
               <button
                 onClick={handleNext}
-                className="w-full py-5 bg-[#FF7676] text-white text-lg font-extrabold rounded-2xl shadow-xl shadow-[#FF7676]/30 hover:bg-[#ff6565] transition-all active:scale-[0.98] flex items-center justify-center gap-3"
+                className="w-full py-5 bg-primary text-white text-lg font-extrabold rounded-2xl shadow-xl shadow-[#f26565]/30 hover:bg-[#d94f4f] transition-all active:scale-[0.98] flex items-center justify-center gap-3"
               >
                 <span>축제 추천받기</span>
                 <span className="material-symbols-outlined">auto_awesome</span>
               </button>
             </div>
           </div>
-          <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#FF7676]/5 rounded-full blur-3xl"></div>
-          <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-secondary/5 rounded-full blur-3xl"></div>
+          <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#f26565]/5 rounded-full blur-3xl"></div>
+          <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-[#f26565]/5 rounded-full blur-3xl"></div>
         </div>
       </main>
     </>

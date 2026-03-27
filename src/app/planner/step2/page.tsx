@@ -49,7 +49,7 @@ const FestivalCard = ({
 
   return (
     <article
-      className={`bg-white border border-[#D1D1D1] rounded-2xl overflow-hidden flex flex-col sm:flex-row group transition-all duration-300 ${isSelected ? 'ring-2 ring-[#FF7676]' : 'hover:shadow-md'}`}
+      className={`bg-white border border-[#D1D1D1] rounded-2xl overflow-hidden flex flex-col sm:flex-row group transition-all duration-300 ${isSelected ? 'ring-2 ring-[#f26565]' : 'hover:shadow-md'}`}
     >
       <div className="w-full sm:w-48 h-48 relative overflow-hidden">
         <img
@@ -58,7 +58,7 @@ const FestivalCard = ({
           alt={title}
         />
         {isSelected && (
-          <div className="absolute top-3 left-3 bg-[#FF7676] px-3 py-1 rounded-full text-white text-[10px] font-bold uppercase tracking-widest">
+          <div className="absolute top-3 left-3 bg-primary px-3 py-1 rounded-full text-white text-[10px] font-bold uppercase tracking-widest">
             Selected
           </div>
         )}
@@ -68,7 +68,7 @@ const FestivalCard = ({
           <div className="flex justify-between items-start mb-2">
             <h3 className="text-xl font-bold text-on-surface">{title}</h3>
             <span
-              className={`${isSelected ? 'text-[#FF7676]' : 'text-on-surface-variant'} font-bold`}
+              className={`${isSelected ? 'text-primary' : 'text-on-surface-variant'} font-bold`}
             >
               {rating} ★
             </span>
@@ -89,7 +89,7 @@ const FestivalCard = ({
           </label>
           <div className="relative">
             <select
-              className="w-full pl-4 pr-10 py-2.5 bg-white border border-[#D1D1D1] rounded-xl text-sm font-medium focus:ring-2 focus:ring-primary focus:border-primary appearance-none"
+              className="w-full pl-4 pr-10 py-2.5 bg-white border border-[#D1D1D1] rounded-xl text-sm font-medium focus:ring-2 focus:ring-[#f26565] focus:border-[#f26565] appearance-none"
               value={selectedDate}
               onChange={(e) => {
                 setSelectedDate(e.target.value)
@@ -111,7 +111,7 @@ const FestivalCard = ({
         </div>
         <button
           onClick={() => onSelect(id)}
-          className={`mt-4 w-full py-3 rounded-full font-bold text-sm transition-all flex items-center justify-center cursor-pointer border border-[#FF7676] hover:bg-primary/5 ${isSelected ? 'bg-[#FF7676] text-white' : 'bg-white border border-primary text-[#FF7676] hover:bg-primary/5'}`}
+          className={`mt-4 w-full py-3 rounded-full font-bold text-sm transition-all flex items-center justify-center cursor-pointer border border-primary hover:bg-primary/5 ${isSelected ? 'bg-primary text-white' : 'bg-white border border-primary text-primary hover:bg-[#f26565]/5'}`}
         >
           {isSelected && (
             <span
@@ -266,7 +266,7 @@ const Calendar = ({
       <div className="flex items-center justify-between px-2">
         <button
           onClick={handlePrevMonth}
-          className="p-2 hover:bg-[#FF7676] rounded-full transition-colors flex items-center justify-center"
+          className="p-2 hover:bg-primary rounded-full transition-colors flex items-center justify-center"
         >
           <span className="material-symbols-outlined">
             <span className="material-symbols-outlined">chevron_left</span>
@@ -275,14 +275,14 @@ const Calendar = ({
         <span className="text-lg font-bold">{monthName}</span>
         <button
           onClick={handleNextMonth}
-          className="p-2 hover:bg-[#FF7676] rounded-full transition-colors flex items-center justify-center"
+          className="p-2 hover:bg-primary rounded-full transition-colors flex items-center justify-center"
         >
           <span className="material-symbols-outlined">
             <span className="material-symbols-outlined">chevron_right</span>
           </span>
         </button>
       </div>
-      <div className="grid grid-cols-7 gap-y-2">
+      <div className="grid grid-cols-7 gap-y-2 gap-x-1">
         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
           <div
             key={day}
@@ -311,11 +311,11 @@ const Calendar = ({
               className={`h-10 flex items-center justify-center text-sm cursor-pointer relative transition-all select-none rounded-full
                   ${
                     primary
-                      ? 'bg-[#FF7676] text-white z-10 shadow-lg shadow-[#FF7676]/30 font-bold'
+                      ? 'bg-primary text-white z-10 shadow-lg shadow-[#f26565]/30 font-bold'
                       : between
                         ? 'bg-gray-100 font-bold'
                         : festival
-                          ? 'bg-[#FF7676]/10 text-[#FF7676] font-bold'
+                          ? 'bg-[#f26565]/10 text-primary font-bold rounded-sm'
                           : 'text-on-surface-variant hover:bg-black/5'
                   }
               `}
@@ -446,7 +446,7 @@ export default function Step2() {
       <main className="pt-10 pb-32 px-4 max-w-7xl mx-auto">
         <div className="bg-white rounded-3xl border border-[#D1D1D1] shadow-sm p-8 md:p-12">
           <header className="mb-12 flex flex-col items-center text-center">
-            <div className="inline-flex items-center px-4 py-2 rounded-full bg-[#FF7676]/10 text-[#FF7676] mb-6">
+            <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary-light text-primary mb-6">
               <span
                 className="material-symbols-outlined mr-2 text-xl"
                 style={{ fontVariationSettings: '"FILL" 1' }}
@@ -458,7 +458,7 @@ export default function Step2() {
             <h1 className="text-4xl md:text-5xl font-extrabold text-on-surface mb-4 tracking-tighter leading-tight">
               선택한 축제를 중심으로
               <br />
-              AI가 <span className="text-[#FF7676] italic">최적의 일정</span>을
+              AI가 <span className="text-primary italic">최적의 일정</span>을
               짜드립니다
             </h1>
             <p className="text-on-surface-variant max-w-2xl leading-relaxed">
@@ -470,7 +470,7 @@ export default function Step2() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
             <section className="order-2 lg:order-1 lg:col-span-7 space-y-6">
               <h2 className="text-2xl font-bold flex items-center mb-4">
-                <span className="material-symbols-outlined mr-2 text-[#FF7676]">
+                <span className="material-symbols-outlined mr-2 text-primary">
                   festival
                 </span>
                 추천 축제 리스트
@@ -510,7 +510,7 @@ export default function Step2() {
               <div className="sticky top-28 space-y-8">
                 <div className="bg-white border border-[#D1D1D1] rounded-2xl p-6">
                   <h2 className="text-xl font-bold flex items-center mb-4">
-                    <span className="mr-2 text-[#FF7676]">
+                    <span className="mr-2 text-primary">
                       <span className="material-symbols-outlined mr-2 text-primary">
                         location_on
                       </span>
@@ -519,7 +519,7 @@ export default function Step2() {
                   </h2>
                   <div className="relative">
                     <input
-                      className="w-full px-4 py-3 bg-[#F4F4F4] border-0 rounded-xl focus:ring-2 focus:ring-[#FF7676] text-sm font-medium transition-all cursor-pointer"
+                      className="w-full px-4 py-3 bg-[#F4F4F4] border-0 rounded-xl focus:ring-2 focus:ring-primary text-sm font-medium transition-all cursor-pointer"
                       placeholder="어디에서 출발하시나요? 클릭하여 주소 검색"
                       type="text"
                       value={address}
@@ -543,14 +543,14 @@ export default function Step2() {
                 <div className="bg-white border border-[#D1D1D1] rounded-2xl p-8 space-y-8">
                   <div className="flex items-center justify-between">
                     <h2 className="text-xl font-bold flex items-center">
-                      <span className="mr-2 text-[#FF7676]">
+                      <span className="mr-2 text-primary">
                         <span className="material-symbols-outlined text-sm mr-1">
                           calendar_today
                         </span>
                       </span>
                       날짜 설정
                     </h2>
-                    <span className="text-[10px] font-bold text-[#FF7676] bg-[#FF7676]/10 px-2 py-1 rounded-full uppercase tracking-tighter italic">
+                    <span className="text-[10px] font-bold text-primary bg-primary-light px-2 py-1 rounded-full uppercase tracking-tighter italic">
                       {selectedFestival.title} 기간
                     </span>
                   </div>
@@ -572,13 +572,13 @@ export default function Step2() {
                         선택한 기간
                       </p>
                       <p className="text-xl font-bold">{getDurationText()}</p>
-                      <p className="text-sm font-medium text-[#FF7676] mt-2">
+                      <p className="text-sm font-medium text-primary mt-2">
                         방문 예정일:{' '}
                         {visitDates[selectedFestivalId] ||
                           getInitialOption(selectedFestival)}
                       </p>
                     </div>
-                    <button className="w-full py-5 rounded-full bg-[#FF7676] hover:bg-[#ff6161] cursor-pointer text-white font-black text-lg transition-all shadow-xl shadow-primary/20 active:scale-95 flex items-center justify-center group">
+                    <button className="w-full py-5 rounded-full bg-primary hover:bg-[#ff6161] cursor-pointer text-white font-black text-lg transition-all shadow-xl shadow-[#f26565]/20 active:scale-95 flex items-center justify-center group">
                       <span
                         className="material-symbols-outlined mr-2 group-hover:rotate-12 transition-transform"
                         style={{ fontVariationSettings: "'FILL' 1" }}

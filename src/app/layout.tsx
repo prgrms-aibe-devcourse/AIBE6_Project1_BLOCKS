@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "@/app/globals.css"
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { FestivalProvider } from "@/context/FestivalContext";
 
 export const metadata: Metadata = {
   title: {
@@ -31,7 +32,9 @@ export default function RootLayout({
       <body className="min-h-screen flex flex-col">
         <Navbar />
         <main className="flex-1">
-          {children}
+          <FestivalProvider>
+            {children}
+          </FestivalProvider>
         </main>
         <Footer />
       </body>

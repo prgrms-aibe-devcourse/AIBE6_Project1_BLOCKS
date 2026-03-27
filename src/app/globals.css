@@ -1,13 +1,7 @@
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
 @import "tailwindcss";
-@config "../../tailwind.config.ts";
-@reference "tailwindcss"; 
 
-/* ─────────────────────────────────────────────
-   FestaPlan Design Tokens : 색깔, 글꼴, 여백, 그림자 등 디자인 변수 지정
-   ───────────────────────────────────────────── */
-   
-:root {
+@theme {
   /* ── Brand Colors ── */
   --color-primary:        #F26565;   /* 메인 색상. 버튼, 링크, 강조 요소 */
   --color-primary-light:  #FDEAEA;   /* 메인 색상 연한 버전. 태그 배경, hover 배경 */
@@ -29,7 +23,7 @@
   --color-surface:        #FAFAFA;   /* 섹션 배경 (약간 회색) */
   --color-border:         #EBEBEB;   /* 전역 테두리 색상 */
   --color-text:           #171717;   /* 기본 텍스트 색상 */
-  --color-text-muted:     #737373;   /* 흐린 텍스트 */
+  --color-muted:          #737373;   /* 흐린 텍스트 (--color-text-muted에서 변경) */
   --color-star:           #F59E0B;   /* 별점 노란색 */
 
   /* ── Typography ── */
@@ -40,6 +34,7 @@
   --radius-sm:   6px;       /* 작은 모서리 (뱃지) */
   --radius-md:   12px;      /* 카드 모서리 */
   --radius-lg:   16px;      /* 큰 카드, 모달 */
+  --radius-card: 12px;      /* 커스텀 카드 모서리 */
   --radius-pill: 9999px;    /* 완전한 알약형 (버튼, 태그) */
 
   /* ── Shadows ── */
@@ -49,9 +44,28 @@
   --shadow-modal:      0 12px 48px rgba(0,0,0,0.14);         /* 모달 그림자 */
 
   /* ── Transitions ── */
-  --transition-fast: 120ms ease;   /* 빠른 반응 (hover) */
-  --transition-base: 200ms ease;   /* 기본 애니메이션 */
-  --transition-slow: 320ms ease;   /* 느린 애니메이션 (카드 hover) */
+  /* transition property variables do not exist natively in v4 theme exactly like this for general utilities, but we can set them to custom props and then use them like we were doing */
+  --transition-fast-timing: 120ms ease;
+  --transition-base-timing: 200ms ease;
+  --transition-slow-timing: 320ms ease;
+
+  /* ── Animations (Migrated from tailwind.config.ts) ── */
+  --animate-fade-in: fade-in 0.3s ease forwards;
+  --animate-scale-in: scale-in 0.25s ease forwards;
+  --animate-slide-down: slide-down 0.3s ease forwards;
+
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes scale-in {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  @keyframes slide-down {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 }
 
 /* ─────────────────────────────────────────────
@@ -91,18 +105,12 @@ body {
    Utility Classes: 자주 쓰는 스타일을 미리 만들어 둔 것
    ───────────────────────────────────────────── */
 @layer utilities {
-  .text-primary   { color: var(--color-primary); }
-  .bg-primary     { background-color: var(--color-primary); }
-  .bg-primary-light { background-color: var(--color-primary-light); }
-  .border-primary { border-color: var(--color-primary); }
-  .text-muted     { color: var(--color-text-muted); }
-
-  .surface        { background-color: var(--color-surface); }
-  .card-shadow    { box-shadow: var(--shadow-card); }
+  .surface { background-color: var(--color-surface); }
+  .card-shadow { box-shadow: var(--shadow-card); }
   .card-shadow-hover { box-shadow: var(--shadow-card-hover); }
 
-  .transition-base { transition: all var(--transition-base); }
-  .transition-fast { transition: all var(--transition-fast); }
+  .transition-base { transition: all var(--transition-base-timing); }
+  .transition-fast { transition: all var(--transition-fast-timing); }
 }
 
 /* ─────────────────────────────────────────────

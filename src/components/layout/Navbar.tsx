@@ -50,7 +50,7 @@ export default function Navbar() {
                                 className={[
                                     "px-3 py-1.5 text-sm rounded-pill transition-fast",
                                     active
-                                        ? "text-[var(--color-primary)] font-semibold bg-[var(--color-primary-light)]"
+                                        ? "text-primary font-semibold bg-primary-light"
                                         : "text-[var(--color-neutral-700)] hover:text-[var(--color-primary)] hover:bg-[var(--color-neutral-50)]",
                                 ].join(" ")}
                             >

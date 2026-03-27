@@ -7,16 +7,18 @@ function FestaList({
 }: {
   FestivalListForm: () => void
   festivalName: {
-    id: number
+    festival_id: number
     created_at: string
     option1: string
-    content: string
+    contents: string
     title: string
-    fsd: string
-    ffd: string
-    dl: string
-    fname: string
-    uid: number
+    start_date: string
+    end_date: string
+    option2: string
+    address: string
+    user_id: string
+    rating: number
+    picture: string
   }[]
 }) {
   useEffect(() => {
@@ -27,21 +29,21 @@ function FestaList({
   return (
     <>
       {festivalName.map((item) => (
-        <ul key={item.id}>
+        <ul key={item.festival_id}>
           <input type="checkbox" />
-          <Link href={`/festival/${item.id}`}>
+          <Link href={`/festival/${item.festival_id}`}>
             {/*  <li>
              <img src={imageUrl} alt="pic1" />
             </li>*/}
-            <li>글제목 : {item.title}</li>
-            <li>축제이름 : {item.fname}</li>
+            <li>글제목/축제이름 : {item.title}</li>
             <li>축제테마 : {item.option1}</li>
             <li>
-              축제기간 : {item.fsd} ~ {item.ffd}
+              축제기간 : {item.start_date} ~ {item.end_date}
             </li>
-            <li>지역 : {item.dl}</li>
-            <li>글쓴이 : {item.uid}</li>
-            <textarea readOnly value={`글내용 : ${item.content}`}></textarea>
+            <li>지역 : {item.option2}</li>
+            <li>상세주소 : {item.address}</li>
+            <li>글쓴이 : {item.user_id}</li>
+            <textarea readOnly value={`글내용 : ${item.contents}`}></textarea>
           </Link>
         </ul>
       ))}

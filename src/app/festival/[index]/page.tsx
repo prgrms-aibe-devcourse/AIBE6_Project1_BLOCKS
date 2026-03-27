@@ -6,16 +6,18 @@ import { useParams, useRouter } from 'next/navigation'
 function FestaList() {
   const [festivalName, setFestivalName] = useState<
     {
-      id: number
+      festival_id: number
       created_at: string
       option1: string
-      content: string
+      contents: string
       title: string
-      fsd: string
-      ffd: string
-      dl: string
-      fname: string
-      uid: number
+      start_date: string
+      end_date: string
+      option2: string
+      address: string
+      user_id: number
+      rating: number
+      picture: string
     }[]
   >([])
   const router = useRouter()
@@ -28,7 +30,7 @@ function FestaList() {
     const { data: festivalName, error } = await supabase
       .from('festivals')
       .select('*')
-      .eq('id', index)
+      .eq('festival_id', index)
     if (error) {
       console.log(error)
     } else {
@@ -36,7 +38,10 @@ function FestaList() {
     }
   }
   const delFesta = async (did: number) => {
-    const { error } = await supabase.from('festivals').delete().eq('id', did)
+    const { error } = await supabase
+      .from('festivals')
+      .delete()
+      .eq('festival_id', did)
     if (error) {
       console.log(error)
     } else {
@@ -60,16 +65,16 @@ function FestaList() {
              <img src={imageUrl} alt="pic1" />
             </li>*/}
         {festivalName.map((item) => (
-          <ul key={item.id}>
-            <li>글제목 : {item.title}</li>
-            <li>축제이름 : {item.fname}</li>
+          <ul key={item.festival_id}>
+            <li>글제목/축제이름 : {item.title}</li>
             <li> 축제테마 : {item.option1}</li>
             <li>
-              축제기간 : {item.fsd} ~ {item.ffd}
+              축제기간 : {item.start_date} ~ {item.end_date}
             </li>
-            <li>지역 : {item.dl}</li>
-            <li>글쓴이 : {item.uid}</li>
-            <textarea readOnly value={`글내용 : ${item.content}`}></textarea>
+            <li>지역 : {item.option2}</li>
+            <li>상세주소 : {item.address}</li>
+            <li>글쓴이 : {item.user_id}</li>
+            <textarea readOnly value={`글내용 : ${item.contents}`}></textarea>
           </ul>
         ))}
         <button onClick={() => modifyFesta(cid)}>수정</button>

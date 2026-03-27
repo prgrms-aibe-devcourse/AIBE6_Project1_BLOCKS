@@ -8,16 +8,18 @@ import FestaList from '@/components/List/FestaList'
 function App() {
   const [festivalName, setFestivalName] = useState<
     {
-      id: number
+      festival_id: number
       created_at: string
       option1: string
-      content: string
+      contents: string
       title: string
-      fsd: string
-      ffd: string
-      dl: string
-      fname: string
-      uid: number
+      start_date: string
+      end_date: string
+      address: string
+      option2: string
+      user_id: string
+      rating: number
+      picture: string
     }[]
   >([])
 
@@ -52,11 +54,11 @@ function App() {
       const { data, error } = await supabase
         .from('festivals')
         .select('*')
-        .gte('ffd', datel)
-        .lte('fsd', datel)
+        .gte('end_date', datel)
+        .lte('start_date', datel)
         .like('option1', `%${op1}%`)
-        .like('dl', `%${loc}%`)
-        .like('fname', `%${ffname}%`)
+        .like('option2', `%${loc}%`)
+        .like('title', `%${ffname}%`)
       if (error) {
         console.log(error)
       } else {
@@ -66,10 +68,10 @@ function App() {
       const { data, error } = await supabase
         .from('festivals')
         .select('*')
-        .gte('ffd', datel)
-        .lte('fsd', datel)
+        .gte('end_date', datel)
+        .lte('start_date', datel)
         .like('option1', `%${op1}%`)
-        .like('fname', `%${ffname}%`)
+        .like('title', `%${ffname}%`)
       if (error) {
         console.log(error)
       } else {
@@ -79,10 +81,10 @@ function App() {
       const { data, error } = await supabase
         .from('festivals')
         .select('*')
-        .gte('ffd', datel)
-        .lte('fsd', datel)
-        .like('dl', `%${loc}%`)
-        .like('fname', `%${ffname}%`)
+        .gte('end_date', datel)
+        .lte('start_date', datel)
+        .like('option2', `${loc}%`)
+        .like('title', `%${ffname}%`)
       if (error) {
         console.log(error)
       } else {
@@ -92,9 +94,9 @@ function App() {
       const { data, error } = await supabase
         .from('festivals')
         .select('*')
-        .gte('ffd', datel)
-        .lte('fsd', datel)
-        .like('fname', `%${ffname}%`)
+        .gte('end_date', datel)
+        .lte('start_date', datel)
+        .like('title', `%${ffname}%`)
       if (error) {
         console.log(error)
       } else {

@@ -15,16 +15,16 @@ function modifyFesta() {
       .update([
         {
           option1: e.currentTarget.themeitems.value,
-          content: e.currentTarget.cn.value,
+          contents: e.currentTarget.cn.value,
           title: e.currentTarget.ctitle.value,
-          fsd: e.currentTarget.Festasdate.value,
-          ffd: e.currentTarget.Festafdate.value,
-          dl: e.currentTarget.FestaLocation.value,
-          fname: e.currentTarget.festivalName.value,
-          uid: '1',
+          start_date: e.currentTarget.Festasdate.value,
+          end_date: e.currentTarget.Festafdate.value,
+          option2: e.currentTarget.FestaLocation.value,
+          address: e.currentTarget.festaLocationDetail.value,
+          user_id: '3695ba2c-d9f5-4a74-9279-e4157ce2765c',
         },
       ])
-      .eq('id', did)
+      .eq('festival_id', did)
       .select()
     if (error) {
       console.log(error)
@@ -48,12 +48,6 @@ function modifyFesta() {
             type="text"
             id="ctitle"
             placeholder="글제목을 입력하세요"
-            className="border border-black"
-          />
-          <input
-            type="text"
-            id="festivalName"
-            placeholder="축제이름을 입력하세요"
             className="border border-black"
           />
           <input

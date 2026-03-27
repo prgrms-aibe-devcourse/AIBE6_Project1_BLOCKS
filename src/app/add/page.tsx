@@ -3,6 +3,8 @@ import { supabase } from '@/app/supabse/supabse'
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { v4 as uuidv4 } from 'uuid'
+
 function addFesta() {
   const router = useRouter()
   const [text, setText] = useState('')
@@ -13,13 +15,15 @@ function addFesta() {
       .insert([
         {
           option1: e.currentTarget.themeitems.value,
-          content: e.currentTarget.cn.value,
+          contents: e.currentTarget.cn.value,
           title: e.currentTarget.ctitle.value,
-          fsd: e.currentTarget.Festasdate.value,
-          ffd: e.currentTarget.Festafdate.value,
-          dl: e.currentTarget.FestaLocation.value,
-          fname: e.currentTarget.festaName.value,
-          uid: '1',
+          start_date: e.currentTarget.Festasdate.value,
+          end_date: e.currentTarget.Festafdate.value,
+          option2: e.currentTarget.FestaLocation.value,
+          address: e.currentTarget.festaLocationDetail.value,
+          user_id: '3695ba2c-d9f5-4a74-9279-e4157ce2765c',
+          picture: imageUrl,
+          rating: 0,
         },
       ])
       .select()
@@ -45,12 +49,6 @@ function addFesta() {
             type="text"
             id="ctitle"
             placeholder="글제목을 입력하세요"
-            className="border border-black"
-          />
-          <input
-            type="text"
-            id="festaName"
-            placeholder="축제이름을 입력하세요"
             className="border border-black"
           />
           <input

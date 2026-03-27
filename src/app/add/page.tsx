@@ -53,6 +53,12 @@ function addFesta() {
             placeholder="축제이름을 입력하세요"
             className="border border-black"
           />
+          <input
+            type="text"
+            id="festaLocationDetail"
+            placeholder="축제상세주소를 입력하세요"
+            className="border border-black"
+          />
         </div>
         <div className="flex">
           <select id="themeitems" name="items" className="border border-black">

@@ -62,14 +62,6 @@ export default function Navbar() {
 
                 {/* Right Actions */}
                 <div className="hidden md:flex items-center gap-2">
-                    {/* Search icon */}
-                    <button
-                        aria-label="검색"
-                        className="p-2 rounded-pill text-[var(--color-neutral-500)] hover:text-[var(--color-primary)] hover:bg-[var(--color-neutral-100)] transition-fast"
-                    >
-                        <SearchIcon />
-                    </button>
-
                     {/* Bell icon */}
                     <button
                         aria-label="알림"

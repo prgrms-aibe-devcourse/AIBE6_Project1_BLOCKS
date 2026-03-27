@@ -1,27 +1,180 @@
-export default function Result() {
+'use client'
+
+import { supabase } from '@/lib/supabase'
+import { useSearchParams } from 'next/navigation'
+import { Suspense, useEffect, useState } from 'react'
+
+function ResultContent() {
+  const searchParams = useSearchParams()
+  const plannerId = searchParams.get('id')
+
+  const [planner, setPlanner] = useState<any>(null)
+  const [plans, setPlans] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  // Folding State
+  const [collapsedDays, setCollapsedDays] = useState<number[]>([])
+
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [modalMode, setModalMode] = useState<'add' | 'edit'>('add')
+  const [editingPlan, setEditingPlan] = useState<any>(null)
+  const [formData, setFormData] = useState({
+    day: 1,
+    start_time: '10:00',
+    emd_time: '12:00',
+    place: '',
+    contents: '',
+  })
+
+  useEffect(() => {
+    if (!plannerId) return
+    fetchData()
+  }, [plannerId])
+
+  const fetchData = async () => {
+    setLoading(true)
+    const { data: plannerData } = await supabase
+      .from('planner')
+      .select('*')
+      .eq('planner_id', plannerId)
+      .single()
+    const { data: plansData } = await supabase
+      .from('plans')
+      .select('*')
+      .eq('planner_id', plannerId)
+      .order('day')
+      .order('start_time')
+
+    setPlanner(plannerData)
+    setPlans(plansData || [])
+    setLoading(false)
+  }
+
+  const handleDelete = async (planId: number) => {
+    if (!confirm('정말 삭제하시겠습니까?')) return
+    await supabase.from('plans').delete().eq('plan_id', planId)
+    fetchData()
+  }
+
+  const handleOpenAdd = (day: number) => {
+    setModalMode('add')
+    setFormData({
+      day,
+      start_time: '12:00',
+      emd_time: '13:00',
+      place: '',
+      contents: '',
+    })
+    setIsModalOpen(true)
+  }
+
+  const handleOpenEdit = (plan: any) => {
+    setModalMode('edit')
+    setEditingPlan(plan)
+    const st = plan.start_time ? plan.start_time.substring(0, 5) : ''
+    const et = plan.emd_time ? plan.emd_time.substring(0, 5) : ''
+    setFormData({
+      day: plan.day,
+      start_time: st,
+      emd_time: et,
+      place: plan.place,
+      contents: plan.contents,
+    })
+    setIsModalOpen(true)
+  }
+
+  const handleSave = async () => {
+    if (!formData.place) return alert('장소명을 입력해주세요.')
+
+    const { day, start_time, emd_time, place, contents } = formData
+    const formattedStart = `${start_time}:00+09:00`
+    const formattedEnd = `${emd_time}:00+09:00`
+
+    if (modalMode === 'add') {
+      await supabase.from('plans').insert({
+        planner_id: plannerId,
+        day,
+        start_time: formattedStart,
+        emd_time: formattedEnd,
+        place,
+        contents,
+      })
+    } else {
+      await supabase
+        .from('plans')
+        .update({
+          day,
+          start_time: formattedStart,
+          emd_time: formattedEnd,
+          place,
+          contents,
+        })
+        .eq('plan_id', editingPlan.plan_id)
+    }
+
+    setIsModalOpen(false)
+    fetchData()
+  }
+
+  const toggleDay = (dayNum: number) => {
+    setCollapsedDays((prev) =>
+      prev.includes(dayNum) ? prev.filter((d) => d !== dayNum) : [...prev, dayNum]
+    )
+  }
+
+  if (!plannerId)
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        플랜 ID가 없습니다.
+      </div>
+    )
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Loading...
+      </div>
+    )
+  if (!planner)
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        플랜을 찾을 수 없습니다.
+      </div>
+    )
+
+  const startD = new Date(planner.start_date)
+  const endD = new Date(planner.end_date)
+  let totalDays =
+    Math.ceil((endD.getTime() - startD.getTime()) / (1000 * 60 * 60 * 24)) + 1
+  if (isNaN(totalDays) || totalDays < 1) totalDays = 1
+
+  const daysArray = Array.from({ length: totalDays }, (_, i) => i + 1)
+
   return (
-    <>
-      <main className="pt-24 pb-32 px-4 max-w-7xl mx-auto">
+    <div className="min-h-screen bg-[#f5f5f5]">
+      <main className="pt-10 pb-32 px-4 max-w-7xl mx-auto">
         <header className="mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-secondary-container rounded-full mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-light rounded-full mb-4 shadow-sm border border-primary/10">
             <span
-              className="material-symbols-outlined text-[#ff7676] text-sm"
-              style={{ fontVariationSettings: 'FILL' }}
+              className="material-symbols-outlined text-primary text-sm"
+              style={{ fontVariationSettings: "'FILL' 1" }}
             >
               auto_awesome
             </span>
-            <span className="text-on-secondary-container text-xs font-bold tracking-wider uppercase">
+            <span className="text-primary text-xs font-bold tracking-wider uppercase">
               AI Recommendation
             </span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-extrabold text-on-surface tracking-tight leading-tight">
-            AI가 추천하는 <br className="md:hidden" />{' '}
-            <span className="text-[#ff7676]">최적의 여행 플랜</span>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-[#171717] tracking-tight leading-tight">
+            AI가 추천하는 <br className="md:hidden" />
+            <span className="text-primary">최적의 여행 플랜</span>
           </h1>
         </header>
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Left Sidebar: Summary Card */}
           <aside className="lg:col-span-4 space-y-6">
-            <div className="bg-white p-8 rounded-xl border border-outline-variant shadow-sm sticky top-28">
+            <div className="bg-white p-8 rounded-xl border border-[#ebebeb] shadow-sm sticky top-28">
               <div className="aspect-[4/3] rounded-lg overflow-hidden mb-6">
                 <img
                   alt="vibrant traditional korean festival with colorful lanterns"
@@ -29,237 +182,277 @@ export default function Result() {
                   src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZqv8pgUBfv4NQ68r894LVsw56erH8K-EQ7-THJ8Am4RpqqmbJA_t7yLCeVbG5KH9GkkGTsxtVEbVD290epNvzgfrxICy7mpkE5hBmaJtno4WGWHUcO81jw3-_YsWUpElwXdgBs45KFtwdI5i-MA-iZZfy-yKOyvxEyMQ_6IHmFq8EWtnKnzlaL8sG8qomhmnoWEqMc3NnNt8lhg_6-rhERoemQzlEQpqwkgqYZuIYwOOaSBDYYfF_QnJ2rT0G9CtR6M5tgL0F03w"
                 />
               </div>
-              <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                <span className="material-symbols-outlined text-[#ff7676]">
+              <h2 className="text-2xl font-bold mb-6 flex items-center gap-2 text-[#171717]">
+                <span className="material-symbols-outlined text-primary">
                   event_available
                 </span>
                 여행 요약
               </h2>
               <div className="space-y-6">
                 <div className="flex flex-col gap-1">
-                  <span className="text-xs font-bold text-on-surface/40 uppercase tracking-widest">
-                    출발지
+                  <span className="text-xs font-bold text-neutral-400 uppercase tracking-widest">
+                    여행 제목
                   </span>
-                  <span className="text-lg font-semibold">서울역 (KTX)</span>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <span className="text-xs font-bold text-on-surface/40 uppercase tracking-widest">
-                    선택한 축제
-                  </span>
-                  <span className="text-lg font-semibold text-[#ff7676]">
-                    안동 국제 탈춤 페스티벌
+                  <span className="text-lg font-semibold text-[#171717]">
+                    {planner.title}
                   </span>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <span className="text-xs font-bold text-on-surface/40 uppercase tracking-widest">
+                  <span className="text-xs font-bold text-neutral-400 uppercase tracking-widest">
+                    선택 범위
+                  </span>
+                  <span className="text-lg font-semibold text-primary">
+                    AI 커스텀 플랜
+                  </span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs font-bold text-neutral-400 uppercase tracking-widest">
                     기간
                   </span>
-                  <span className="text-lg font-semibold">
-                    2024. 10. 02 - 10. 04 (2박 3일)
+                  <span className="text-lg font-semibold text-[#171717]">
+                    {planner.start_date && planner.end_date
+                      ? `${planner.start_date.replace(/-/g, '.')} - ${planner.end_date.replace(/-/g, '.')} (${totalDays - 1}박 ${totalDays}일)`
+                      : '날짜 미지정'}
                   </span>
                 </div>
               </div>
-              <div className="mt-8 pt-8 border-t border-outline-variant">
-                <div className="flex items-center justify-between text-on-surface/60 mb-4">
+              <div className="mt-8 pt-8 border-t border-[#ebebeb]">
+                <div className="flex items-center justify-between text-neutral-500 mb-4">
                   <span className="text-sm">예상 이동 거리</span>
-                  <span className="font-bold">245 km</span>
+                  <span className="font-bold text-[#171717]">
+                    {planner.distance || '0km'}
+                  </span>
                 </div>
-                <div className="flex items-center justify-between text-on-surface/60">
+                <div className="flex items-center justify-between text-neutral-500">
                   <span className="text-sm">AI 신뢰도</span>
-                  <span className="font-bold text-[#ff7676]">98%</span>
+                  <span className="font-bold text-primary">
+                    {planner.confidence || '98%'}
+                  </span>
                 </div>
               </div>
             </div>
           </aside>
+
+          {/* Main Content: Timeline */}
           <section className="lg:col-span-8 space-y-12">
-            <div className="relative">
-              <div className="flex items-center gap-4 mb-8">
-                <div className="bg-[#ff7676] text-on-[#ff7676] w-16 h-16 rounded-2xl flex flex-col items-center justify-center shadow-lg shadow-[#ff7676]/20">
-                  <span className="text-[10px] font-bold">DAY</span>
-                  <span className="text-2xl font-black">01</span>
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold">축제의 시작, 안동으로</h3>
-                  <p className="text-on-surface/60 text-sm">
-                    2024년 10월 2일 수요일
-                  </p>
-                </div>
-              </div>
-              <div className="space-y-6 relative ml-8 border-l-2 border-dashed border-outline-variant pl-8">
-                <div className="bg-white p-6 rounded-xl border border-outline-variant group hover:shadow-md transition-shadow duration-300 relative">
-                  <div className="absolute -left-[41px] top-8 w-4 h-4 rounded-full bg-[#ff7676] ring-4 ring-surface"></div>
-                  <div className="flex justify-between items-start gap-4">
-                    <div className="flex-1">
-                      <span className="text-sm font-bold text-[#ff7676] mb-1 block">
-                        10:00 AM
+            {daysArray.map((dayNum) => {
+              const dayPlans = plans.filter((p) => p.day === dayNum)
+
+              const currentDayDate = new Date(startD)
+              if (!isNaN(currentDayDate.getTime())) {
+                currentDayDate.setDate(currentDayDate.getDate() + dayNum - 1)
+              }
+
+              const isCollapsed = collapsedDays.includes(dayNum)
+
+              return (
+                <div key={dayNum} className="relative bg-white p-6 rounded-2xl shadow-sm border border-[#ebebeb]">
+                  {/* Day Header */}
+                  <div
+                    className="flex items-center gap-4 cursor-pointer group"
+                    onClick={() => toggleDay(dayNum)}
+                  >
+                    <div className="bg-primary text-white w-16 h-16 rounded-2xl flex flex-col items-center justify-center shadow-lg shadow-primary/20 shrink-0 transition-transform group-hover:scale-105">
+                      <span className="text-[10px] font-bold">DAY</span>
+                      <span className="text-2xl font-black">
+                        {String(dayNum).padStart(2, '0')}
                       </span>
-                      <h4 className="text-lg font-bold mb-2">서울역 출발</h4>
-                      <p className="text-on-surface/60 text-sm leading-relaxed">
-                        KTX-이음 701열차를 이용하여 안동역으로 이동합니다. 차창
-                        밖 풍경을 즐겨보세요.
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-[#171717] group-hover:text-primary transition-colors">
+                        DAY {dayNum} 스케줄
+                      </h3>
+                      <p className="text-neutral-500 text-sm">
+                        {!isNaN(currentDayDate.getTime())
+                          ? `${currentDayDate.getFullYear()}년 ${currentDayDate.getMonth() + 1}월 ${currentDayDate.getDate()}일`
+                          : ''}
                       </p>
                     </div>
-                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button className="p-2 hover:bg-surface rounded-lg text-on-surface/40">
-                        <span className="material-symbols-outlined text-xl">
-                          edit
+                    <div className="ml-auto">
+                      <span className="material-symbols-outlined text-3xl text-neutral-300 group-hover:text-primary transition-colors">
+                        {isCollapsed ? 'expand_more' : 'expand_less'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Day Contents */}
+                  <div
+                    className={`transition-all duration-300 overflow-hidden ${
+                      isCollapsed ? 'max-h-0 opacity-0' : 'max-h-[5000px] opacity-100 mt-8'
+                    }`}
+                  >
+                    <div className="space-y-6 relative ml-8 border-l-2 border-dashed border-[#ebebeb] pl-8 pb-4">
+                      {dayPlans.map((plan, idx) => (
+                        <div
+                          key={plan.plan_id}
+                          className="bg-white p-5 rounded-xl border border-[#ebebeb] group hover:shadow-md hover:border-primary/30 transition-all duration-300 relative"
+                        >
+                          <div className="absolute -left-[41px] top-8 w-4 h-4 rounded-full bg-primary ring-4 ring-white"></div>
+                          
+                          <div className="flex flex-col gap-3">
+                            {/* Card Header (Time, Place, Buttons) */}
+                            <div className="flex justify-between items-start gap-4">
+                              <div>
+                                <span className="text-sm font-bold text-primary mb-1 block">
+                                  {plan.start_time
+                                    ? plan.start_time.substring(0, 5)
+                                    : ''}{' '}
+                                  -{' '}
+                                  {plan.emd_time
+                                    ? plan.emd_time.substring(0, 5)
+                                    : ''}
+                                </span>
+                                <h4 className="text-lg font-bold text-[#171717]">
+                                  {plan.place}
+                                </h4>
+                              </div>
+                              <div className="flex gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity shrink-0">
+                                <button
+                                  onClick={() => handleOpenEdit(plan)}
+                                  className="p-2 hover:bg-neutral-100 rounded-lg text-neutral-400 hover:text-primary transition-colors"
+                                >
+                                  <span className="material-symbols-outlined text-xl">
+                                    edit
+                                  </span>
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(plan.plan_id)}
+                                  className="p-2 hover:bg-red-50 rounded-lg text-red-500 transition-colors"
+                                >
+                                  <span className="material-symbols-outlined text-xl">
+                                    delete
+                                  </span>
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Card Body (Contents) */}
+                            {plan.contents && (
+                              <div className="bg-[#fcfcfc] p-4 rounded-lg border border-neutral-100">
+                                <p className="text-neutral-500 text-sm leading-relaxed whitespace-pre-wrap">
+                                  {plan.contents}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+
+                      <button
+                        onClick={() => handleOpenAdd(dayNum)}
+                        className="flex items-center gap-2 px-6 py-4 rounded-xl border-2 border-dashed border-primary/30 text-primary font-bold w-full justify-center hover:bg-primary/5 transition-colors group"
+                      >
+                        <span className="material-symbols-outlined group-hover:scale-110 transition-transform">
+                          add_circle
                         </span>
-                      </button>
-                      <button className="p-2 hover:bg-red-50 rounded-lg text-red-400">
-                        <span className="material-symbols-outlined text-xl">
-                          delete
-                        </span>
+                        일정 추가하기
                       </button>
                     </div>
                   </div>
                 </div>
-                <div className="bg-white p-6 rounded-xl border border-outline-variant group hover:shadow-md transition-shadow duration-300 relative">
-                  <div className="absolute -left-[41px] top-8 w-4 h-4 rounded-full bg-[#ff7676] ring-4 ring-surface"></div>
-                  <div className="flex justify-between items-start gap-4">
-                    <div className="flex-1">
-                      <span className="text-sm font-bold text-[#ff7676] mb-1 block">
-                        01:30 PM
-                      </span>
-                      <h4 className="text-lg font-bold mb-2">
-                        안동 찜닭 골목 중식
-                      </h4>
-                      <p className="text-on-surface/60 text-sm leading-relaxed">
-                        안동 구시장에서 정통 안동 찜닭으로 든든한 점심 식사를
-                        합니다. 매콤달콤한 맛이 일품입니다.
-                      </p>
-                    </div>
-                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button className="p-2 hover:bg-surface rounded-lg text-on-surface/40">
-                        <span className="material-symbols-outlined text-xl">
-                          edit
-                        </span>
-                      </button>
-                      <button className="p-2 hover:bg-red-50 rounded-lg text-red-400">
-                        <span className="material-symbols-outlined text-xl">
-                          delete
-                        </span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-white p-6 rounded-xl border border-outline-variant group hover:shadow-md transition-shadow duration-300 relative">
-                  <div className="absolute -left-[41px] top-8 w-4 h-4 rounded-full bg-[#ff7676] ring-4 ring-surface"></div>
-                  <div className="flex justify-between items-start gap-4">
-                    <div className="flex-1">
-                      <span className="text-sm font-bold text-[#ff7676] mb-1 block">
-                        03:30 PM
-                      </span>
-                      <h4 className="text-lg font-bold mb-2">
-                        탈춤공원 축제장 관람
-                      </h4>
-                      <p className="text-on-surface/60 text-sm leading-relaxed">
-                        국제 탈춤 페스티벌 메인 행사장 관람. 세계 각국의 탈춤
-                        공연과 체험 부스를 즐깁니다.
-                      </p>
-                    </div>
-                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button className="p-2 hover:bg-surface rounded-lg text-on-surface/40">
-                        <span className="material-symbols-outlined text-xl">
-                          edit
-                        </span>
-                      </button>
-                      <button className="p-2 hover:bg-red-50 rounded-lg text-red-400">
-                        <span className="material-symbols-outlined text-xl">
-                          delete
-                        </span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <button className="flex items-center gap-2 px-6 py-4 rounded-xl border-2 border-dashed border-[#ff7676]/30 text-[#ff7676] font-bold w-full justify-center hover:bg-[#ff7676]/5 transition-colors">
-                  <span className="material-symbols-outlined">add_circle</span>
-                  일정 추가하기
-                </button>
-              </div>
-            </div>
-            <div className="relative">
-              <div className="flex items-center gap-4 mb-8">
-                <div className="bg-white text-on-surface/40 border border-outline-variant w-16 h-16 rounded-2xl flex flex-col items-center justify-center">
-                  <span className="text-[10px] font-bold">DAY</span>
-                  <span className="text-2xl font-black">02</span>
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold">전통의 숨결 속으로</h3>
-                  <p className="text-on-surface/60 text-sm">
-                    2024년 10월 3일 목요일
-                  </p>
-                </div>
-              </div>
-              <div className="space-y-6 relative ml-8 border-l-2 border-dashed border-outline-variant pl-8">
-                <div className="bg-white p-6 rounded-xl border border-outline-variant group hover:shadow-md transition-shadow duration-300 relative">
-                  <div className="absolute -left-[41px] top-8 w-4 h-4 rounded-full bg-on-surface/20 ring-4 ring-surface"></div>
-                  <div className="flex justify-between items-start gap-4">
-                    <div className="flex-1">
-                      <span className="text-sm font-bold text-[#ff7676] mb-1 block">
-                        09:00 AM
-                      </span>
-                      <h4 className="text-lg font-bold mb-2">하회마을 산책</h4>
-                      <p className="text-on-surface/60 text-sm leading-relaxed">
-                        유네스코 세계문화유산 하회마을을 여유롭게 산책하며
-                        한옥의 아름다움을 만끽합니다.
-                      </p>
-                    </div>
-                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button className="p-2 hover:bg-surface rounded-lg text-on-surface/40">
-                        <span className="material-symbols-outlined text-xl">
-                          edit
-                        </span>
-                      </button>
-                      <button className="p-2 hover:bg-red-50 rounded-lg text-red-400">
-                        <span className="material-symbols-outlined text-xl">
-                          delete
-                        </span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <button className="flex items-center gap-2 px-6 py-4 rounded-xl border-2 border-dashed border-[#ff7676]/30 text-[#ff7676] font-bold w-full justify-center hover:bg-[#ff7676]/5 transition-colors">
-                  <span className="material-symbols-outlined">add_circle</span>
-                  일정 추가하기
-                </button>
-              </div>
-            </div>
+              )
+            })}
           </section>
         </div>
       </main>
-      <footer className="fixed bottom-0 left-0 w-full z-40 bg-white/90 backdrop-blur-xl border-t border-outline-variant p-4 md:p-6 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-4 items-center justify-between">
-          <div className="hidden md:flex items-center gap-4">
-            <div className="flex -space-x-3">
-              <img
-                alt="user profile"
-                className="w-10 h-10 rounded-full border-2 border-white object-cover"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCwcvkbsNeY8W8v2wzhCR1UtdbwRBt4f-WQDjxZsU1FqxAvXDc8EbgZm6DreHBfymxci30fsHq9mlG2AZv040EaVnVsy8dFnRh1KGmJyzcqJgsZYDBvHgsI7dXqD6NuDPTkp9osw05y_rHEoJdwYg3pB-WmibIvVgYTFxS3gKzWW8iqoughic3Ym4yMWIofgcRPNDrw53pQafM01C2zNdgFL4fBJ1_AVN3gnp-5hdWrLrcChj_R7ddDLY-i1I7Sy_FkPN3W-QvDLbw"
-              />
-              <img
-                alt="user profile"
-                className="w-10 h-10 rounded-full border-2 border-white object-cover"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCe83anknyZOdTv94kbKkVsnmc3-MnHjyCfimvyYTw0TqB23nD0SNB7fHjGS6GqhMtoy11JOAWOQwZMWi-9FeyslTa0lXS0Sw1wgzSpgsb-L1aooQ--ecMHYqChra7f7siJss8TGEdMXb0IukDJfFeiKve9RoNPMc85ytSkEER07PDU1GPWkwd748Q6ypy6BzUEe6F6duDtt4fjBeGB_AIBCh5i6D5o37oC9Bj-0I-Ds46M-y15IInApcCUI8iFMuEpm-sGQIMQbkw"
-              />
-              <div className="w-10 h-10 rounded-full bg-surface border-2 border-white flex items-center justify-center text-xs font-bold text-on-surface/60">
-                +12
+
+      {/* CRUD Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl relative">
+            <h3 className="text-xl font-bold mb-4 text-[#171717]">
+              {modalMode === 'add' ? '일정 추가' : '일정 수정'} (DAY{' '}
+              {formData.day})
+            </h3>
+            <div className="space-y-4">
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="block text-xs font-bold text-neutral-500 mb-1">
+                    시작 시간
+                  </label>
+                  <input
+                    type="time"
+                    className="w-full border border-[#ebebeb] rounded-lg p-2 text-sm focus:ring-2 focus:ring-primary focus:border-primary text-[#171717]"
+                    value={formData.start_time}
+                    onChange={(e) =>
+                      setFormData({ ...formData, start_time: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-xs font-bold text-neutral-500 mb-1">
+                    종료 시간
+                  </label>
+                  <input
+                    type="time"
+                    className="w-full border border-[#ebebeb] rounded-lg p-2 text-sm focus:ring-2 focus:ring-primary focus:border-primary text-[#171717]"
+                    value={formData.emd_time}
+                    onChange={(e) =>
+                      setFormData({ ...formData, emd_time: e.target.value })
+                    }
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-neutral-500 mb-1">
+                  장소명
+                </label>
+                <input
+                  type="text"
+                  className="w-full border border-[#ebebeb] rounded-lg p-2 text-sm focus:ring-2 focus:ring-primary focus:border-primary text-[#171717]"
+                  placeholder="예: 안동역"
+                  value={formData.place}
+                  onChange={(e) =>
+                    setFormData({ ...formData, place: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-neutral-500 mb-1">
+                  상세 내용
+                </label>
+                <textarea
+                  rows={3}
+                  className="w-full border border-[#ebebeb] rounded-lg p-2 text-sm focus:ring-2 focus:ring-primary focus:border-primary resize-none text-[#171717]"
+                  placeholder="일정 상세 내용을 적어주세요"
+                  value={formData.contents}
+                  onChange={(e) =>
+                    setFormData({ ...formData, contents: e.target.value })
+                  }
+                />
               </div>
             </div>
-            <p className="text-sm text-on-surface/60">
-              <span className="font-bold text-on-surface">14명</span>이 이
-              플랜을 함께 검토하고 있습니다.
-            </p>
-          </div>
-          <div className="flex gap-4 w-full md:w-auto">
-            <button className="flex-1 md:flex-none px-8 py-4 bg-surface text-on-surface font-bold rounded-full border border-outline-variant hover:bg-outline-variant transition-colors">
-              공유하기
-            </button>
-            <button className="flex-1 md:flex-none px-12 py-4 bg-[#ff7676] text-on-[#ff7676] font-bold rounded-full shadow-lg shadow-[#ff7676]/30 hover:opacity-90 active:scale-95 transition-all">
-              플랜 저장하기
-            </button>
+            <div className="flex gap-2 mt-6">
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="flex-1 py-3 bg-neutral-100 font-bold rounded-xl text-neutral-500 hover:bg-neutral-200"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleSave}
+                className="flex-1 py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:bg-primary-dark"
+              >
+                저장
+              </button>
+            </div>
           </div>
         </div>
-      </footer>
-    </>
+      )}
+    </div>
+  )
+}
+
+export default function Result() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center text-[#171717] bg-[#f5f5f5]">
+          Loading...
+        </div>
+      }
+    >
+      <ResultContent />
+    </Suspense>
   )
 }

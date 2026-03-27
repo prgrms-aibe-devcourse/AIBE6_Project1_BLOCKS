@@ -1,6 +1,7 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, Suspense } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import DaumPostcode from 'react-daum-postcode'
 
 interface FestivalCardProps {
@@ -329,7 +330,7 @@ const Calendar = ({
   )
 }
 
-export default function Step2() {
+function Step2Content() {
   const [selectedFestivalId, setSelectedFestivalId] = useState(1)
   const [selectedRange, setSelectedRange] = useState<RangeType>(() => {
     const today = new Date()
@@ -340,6 +341,10 @@ export default function Step2() {
   const [isPostcodeOpen, setIsPostcodeOpen] = useState(false)
   const [address, setAddress] = useState('')
   const [visitDates, setVisitDates] = useState<Record<number, string>>({})
+  const [isGenerating, setIsGenerating] = useState(false)
+
+  const searchParams = useSearchParams()
+  const router = useRouter()
 
   const getInitialOption = (festival: any) => {
     if (!festival) return ''
@@ -378,6 +383,45 @@ export default function Step2() {
 
     setAddress(fullAddress)
     setIsPostcodeOpen(false)
+  }
+
+  const handleGenerate = async () => {
+    if (!address) return alert('출발지를 입력해주세요.')
+    if (!selectedRange.start) return alert('여행 날짜를 선택해주세요.')
+
+    setIsGenerating(true)
+
+    const startDate = selectedRange.start?.toISOString().split('T')[0]
+    const endDate = selectedRange.end ? selectedRange.end.toISOString().split('T')[0] : startDate
+
+    const payload = {
+      address,
+      startDate,
+      endDate,
+      festival: {
+        title: selectedFestival.title,
+        date: visitDates[selectedFestivalId] || getInitialOption(selectedFestival)
+      },
+      preferences: {
+        category: searchParams.get('category'),
+        style: searchParams.get('style'),
+        companion: searchParams.get('companion')
+      }
+    }
+
+    try {
+      const res = await fetch('/api/plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      const data = await res.json()
+      if (data.error) throw new Error(data.error)
+      router.push(`/planner/result?id=${data.planner_id}`)
+    } catch (err: any) {
+      alert('일정 생성 중 오류가 발생했습니다: ' + err.message)
+      setIsGenerating(false)
+    }
   }
 
   const festivals = [
@@ -578,14 +622,18 @@ export default function Step2() {
                           getInitialOption(selectedFestival)}
                       </p>
                     </div>
-                    <button className="w-full py-5 rounded-full bg-primary hover:bg-[#ff6161] cursor-pointer text-white font-black text-lg transition-all shadow-xl shadow-[#f26565]/20 active:scale-95 flex items-center justify-center group">
+                    <button 
+                      onClick={handleGenerate}
+                      disabled={isGenerating}
+                      className="w-full py-5 rounded-full bg-primary hover:bg-[#ff6161] disabled:opacity-70 disabled:hover:bg-primary cursor-pointer text-white font-black text-lg transition-all shadow-xl shadow-[#f26565]/20 active:scale-95 flex items-center justify-center group"
+                    >
                       <span
                         className="material-symbols-outlined mr-2 group-hover:rotate-12 transition-transform"
                         style={{ fontVariationSettings: "'FILL' 1" }}
                       >
-                        auto_fix_high
+                        {isGenerating ? 'hourglass_empty' : 'auto_fix_high'}
                       </span>
-                      AI 플랜 생성하기
+                      {isGenerating ? 'AI가 일정을 짜고 있습니다...' : 'AI 플랜 생성하기'}
                     </button>
                   </div>
                 </div>
@@ -595,5 +643,13 @@ export default function Step2() {
         </div>
       </main>
     </div>
+  )
+}
+
+export default function Step2() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <Step2Content />
+    </Suspense>
   )
 }

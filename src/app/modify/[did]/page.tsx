@@ -3,13 +3,22 @@ import { supabase } from '@/app/supabse/supabse'
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { v4 as uuidv4 } from 'uuid'
 function modifyFesta() {
   const { did } = useParams()
   const router = useRouter()
   const [text, setText] = useState('')
-  const onmodifyFesta = async (e: React.FormEvent<HTMLFormElement>) => {
+  const [blob, setBlob] = useState<Blob | null>(null)
+  const uuid = uuidv4().replace(/-/g, '')
+  const onmodifyFesta = async (
+    e: React.FormEvent<HTMLFormElement>,
+    path: Blob | null,
+  ) => {
     e.preventDefault()
-
+    if (!path) {
+      alert('이미지를 선택해주세요.')
+      return
+    }
     const { error } = await supabase
       .from('festivals')
       .update([
@@ -22,6 +31,7 @@ function modifyFesta() {
           option2: e.currentTarget.FestaLocation.value,
           address: e.currentTarget.festaLocationDetail.value,
           user_id: '3695ba2c-d9f5-4a74-9279-e4157ce2765c',
+          picture: uuid + '.jpg',
         },
       ])
       .eq('festival_id', did)
@@ -29,8 +39,15 @@ function modifyFesta() {
     if (error) {
       console.log(error)
     } else {
-      alert('축제가 수정되었습니다.')
-      router.push('/')
+      const { error } = await supabase.storage
+        .from('festival')
+        .upload('./' + uuid + '.jpg', path)
+      if (error) {
+        console.log(error)
+      } else {
+        alert('축제가 수정되었습니다.')
+        router.push('/')
+      }
     }
   }
   const onchange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -38,12 +55,43 @@ function modifyFesta() {
 
     setText(e.target.value)
   }
-  const imageUrl =
-    'https://cdn.imweb.me/upload/S201802145a83a6028d5cf/5b7bbf4d4188b.jpg'
+  const imagechange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (file.type !== 'image/jpeg') {
+      alert('JPEG 파일만 선택해주세요!')
+      return
+    }
+
+    setBlob(file)
+    console.log(file)
+  }
+  const getImageUrl = (path: string) => {
+    const { data } = supabase.storage.from('festival').getPublicUrl(path)
+
+    return data.publicUrl
+  }
   return (
     <>
-      <form onSubmit={onmodifyFesta}>
+      {blob ? (
+        <img src={URL.createObjectURL(blob)} alt="pic1" />
+      ) : (
+        <img src={getImageUrl('blank.png')} alt="pic1" />
+      )}
+      <form onSubmit={(e) => onmodifyFesta(e, blob)}>
         <div className="flex">
+          <div>
+            <label htmlFor="profile_pic">이미지를 선택해주세요</label>
+            <input
+              type="file"
+              id="profile_pic"
+              name="profile_pic"
+              accept=".jpg, .jpeg, .png"
+              className="border border-black"
+              onChange={(e) => imagechange(e)}
+            />
+          </div>
           <input
             type="text"
             id="ctitle"

@@ -29,10 +29,25 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko" data-scroll-behavior="smooth">
-      <body className="min-h-screen flex flex-col">
+      <head>
+        <meta charSet="utf-8" />
+        <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+        <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap"
+          rel="stylesheet"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="text-on-surface">
         <Navbar />
-        <main className="flex-1">
-          <FestivalProvider>{children}</FestivalProvider>
+        <main className="pt-24 pb-20 px-4 md:px-8 max-w-7xl mx-auto">
+          <div className="bg-white rounded-3xl border border-[#D1D5DB] overflow-hidden shadow-sm">
+            <FestivalProvider>{children}</FestivalProvider>
+          </div>
         </main>
         <Footer />
       </body>

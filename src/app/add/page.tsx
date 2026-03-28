@@ -8,8 +8,17 @@ import { v4 as uuidv4 } from 'uuid'
 function addFesta() {
   const router = useRouter()
   const [text, setText] = useState('')
-  const onaddFesta = async (e: React.FormEvent<HTMLFormElement>) => {
+  const [blob, setBlob] = useState<Blob | null>(null)
+  const onaddFesta = async (
+    e: React.FormEvent<HTMLFormElement>,
+    path: Blob | null,
+  ) => {
     e.preventDefault()
+    if (!path) {
+      alert('이미지를 선택해주세요.')
+      return
+    }
+    const uuid = uuidv4().replace(/-/g, '')
     const { error } = await supabase
       .from('festivals')
       .insert([
@@ -22,7 +31,7 @@ function addFesta() {
           option2: e.currentTarget.FestaLocation.value,
           address: e.currentTarget.festaLocationDetail.value,
           user_id: '3695ba2c-d9f5-4a74-9279-e4157ce2765c',
-          picture: imageUrl,
+          picture: uuid + '.jpg',
           rating: 0,
         },
       ])
@@ -30,8 +39,16 @@ function addFesta() {
     if (error) {
       console.log(error)
     } else {
-      alert('축제가 추가되었습니다.')
-      router.push('/')
+      const filePath = './' + uuid + '.jpg' // 저장할 파일명
+      const { error } = await supabase.storage // Supabase Storage 이미지 업로드 코드
+        .from('festival')
+        .upload(filePath, path)
+      if (error) {
+        console.log(error)
+      } else {
+        alert('축제가 추가되었습니다.')
+        router.push('/')
+      }
     }
   }
   const onchange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -39,12 +56,43 @@ function addFesta() {
 
     setText(e.target.value)
   }
-  const imageUrl =
-    'https://cdn.imweb.me/upload/S201802145a83a6028d5cf/5b7bbf4d4188b.jpg'
+  const imagechange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (file.type !== 'image/jpeg') {
+      alert('JPEG 파일만 선택해주세요!')
+      return
+    }
+
+    setBlob(file)
+    console.log(file)
+  }
+  const getImageUrl = (path: string) => {
+    const { data } = supabase.storage.from('festival').getPublicUrl(path)
+
+    return data.publicUrl
+  }
   return (
     <>
-      <form onSubmit={onaddFesta}>
+      {blob ? (
+        <img src={URL.createObjectURL(blob)} alt="pic1" />
+      ) : (
+        <img src={getImageUrl('blank.png')} alt="pic1" />
+      )}
+      <form onSubmit={(e) => onaddFesta(e, blob)}>
         <div className="flex">
+          <div>
+            <label htmlFor="profile_pic">이미지를 선택해주세요</label>
+            <input
+              type="file"
+              id="profile_pic"
+              name="profile_pic"
+              accept=".jpg, .jpeg, .png"
+              className="border border-black"
+              onChange={(e) => imagechange(e)}
+            />
+          </div>
           <input
             type="text"
             id="ctitle"

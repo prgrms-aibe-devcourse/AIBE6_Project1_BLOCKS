@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid'
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import MapContainer from '@/function/map'
-import Script from 'next/script'
+
 function FestaList() {
   const [festivalName, setFestivalName] = useState<
     {
@@ -25,8 +25,6 @@ function FestaList() {
   const router = useRouter()
   const { index } = useParams()
   const cid = Number(index)
-  const imageUrl =
-    'https://cdn.imweb.me/upload/S201802145a83a6028d5cf/5b7bbf4d4188b.jpg'
 
   const selectFesta = async () => {
     const { data: festivalName, error } = await supabase
@@ -52,6 +50,7 @@ function FestaList() {
   }
   useEffect(() => {
     selectFesta()
+    FestivalListForm()
   }, [])
   const modifyFesta = (did: number) => {
     router.push(`/modify/${did}`)
@@ -64,6 +63,9 @@ function FestaList() {
     const { data } = supabase.storage.from('festival').getPublicUrl(path)
 
     return data.publicUrl
+  }
+  const FestivalListForm = () => {
+    setFestivalName(festivalName)
   }
 
   return (
@@ -127,9 +129,6 @@ function FestaList() {
           >
             삭제
           </button>
-          <button className="flex-1 py-4 text-sm font-semibold text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg">
-            오시는 길
-          </button>
         </div>
 
         {festivalName.map((item) => (
@@ -148,10 +147,7 @@ function FestaList() {
                     data-alt="crowd of people watching golden fireworks display at night near water, urban setting"
                     src={getImageUrl(item.picture)}
                   />
-                  <Script
-                    src="//dapi.kakao.com/v2/maps/sdk.js?appkey=dc37dc09b327ae5d0055aebf692b7f78&autoload=false&libraries=services"
-                    strategy="afterInteractive"
-                  />
+
                   <MapContainer address={item.address} />
                 </div>
               </div>

@@ -75,72 +75,116 @@ function addFesta() {
   }
   return (
     <>
-      {blob ? (
-        <img src={URL.createObjectURL(blob)} alt="pic1" />
-      ) : (
-        <img src={getImageUrl('blank.png')} alt="pic1" />
-      )}
-      <form onSubmit={(e) => onaddFesta(e, blob)}>
-        <div className="flex">
-          <div>
-            <label htmlFor="profile_pic">이미지를 선택해주세요</label>
-            <input
-              type="file"
-              id="profile_pic"
-              name="profile_pic"
-              accept=".jpg, .jpeg, .png"
-              className="border border-black"
-              onChange={(e) => imagechange(e)}
-            />
-          </div>
-          <input
-            type="text"
-            id="ctitle"
-            placeholder="글제목을 입력하세요"
-            className="border border-black"
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {blob ? (
+          <img
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            src={URL.createObjectURL(blob)}
+            alt="pic1"
           />
-          <input
-            type="text"
-            id="festaLocationDetail"
-            placeholder="축제상세주소를 입력하세요"
-            className="border border-black"
+        ) : (
+          <img
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            src={getImageUrl('blank.png')}
+            alt="pic1"
           />
-        </div>
-        <div className="flex">
-          <select id="themeitems" name="items" className="border border-black">
-            <option value="음악">음악</option>
-            <option value="꽃">꽃</option>
-            <option value="동물">동물</option>
-            <option value="음식">음식</option>
-            <option value="문화">문화</option>
-            <option value="레저">레저</option>
-            <option value="과학">과학</option>
-            <option value="종교">종교</option>
-          </select>
-          <select
-            id="FestaLocation"
-            className="bg-transparent rounded-xl border-none text-sm font-bold px-4 py-2 focus:ring-0 cursor-pointer"
-          >
-            <option value="서울">서울</option>
-            <option value="경기">경기도</option>
-            <option value="강원">강원도</option>
-            <option value="전라">전라도</option>
-            <option value="경상">경상도</option>
-            <option value="제주">제주도</option>
-            <option value="충청">충청도</option>
-          </select>
-          <input type="date" id="Festasdate" className="border border-black" />
-          <input type="date" id="Festafdate" className="border border-black" />
-          <button>축제 추가</button>
-        </div>
+        )}
         <div>
-          <textarea
-            id="cn"
-            value={text}
-            onChange={(e) => onchange(e)}
-          ></textarea>
+          <form onSubmit={(e) => onaddFesta(e, blob)}>
+            <div className="block">
+              <div>
+                <button className="bg-[#FF7676] text-white rounded-full px-8 py-3 font-bold text-sm shadow-lg shadow-primary/30 active:scale-95 transition-transform whitespace-nowrap ml-2">
+                  축제 추가
+                </button>
+                <label htmlFor="profile_pic">
+                  <h2 className="text-3xl font-bold text-on-surface">
+                    이미지 선택
+                  </h2>
+                </label>
+                <input
+                  type="file"
+                  id="profile_pic"
+                  name="profile_pic"
+                  accept=".jpg, .jpeg, .png"
+                  className="width-full border border-black"
+                  onChange={(e) => imagechange(e)}
+                />
+              </div>
+              <h2 className="text-3xl font-bold text-on-surface">축제 제목</h2>
+              <input
+                type="text"
+                id="ctitle"
+                placeholder="글제목을 입력하세요"
+                className="width-full border border-black"
+              />
+              <h2 className="text-3xl font-bold text-on-surface">
+                축제 상세주소
+              </h2>
+              <input
+                type="text"
+                id="festaLocationDetail"
+                placeholder="축제상세주소를 입력하세요"
+                className="width-full border border-black"
+              />
+            </div>
+            <div>
+              <h2 className="text-3xl font-bold text-on-surface">축제 테마</h2>
+              <select
+                id="themeitems"
+                name="items"
+                className="border border-black"
+              >
+                <option value="음악">음악</option>
+                <option value="꽃">꽃</option>
+                <option value="동물">동물</option>
+                <option value="음식">음식</option>
+                <option value="문화">문화</option>
+                <option value="레저">레저</option>
+                <option value="과학">과학</option>
+                <option value="종교">종교</option>
+              </select>
+              <h2 className="text-3xl font-bold text-on-surface">축제 지역</h2>
+              <select
+                id="FestaLocation"
+                className="bg-transparent rounded-xl border-none text-sm font-bold px-4 py-2 focus:ring-0 cursor-pointer"
+              >
+                <option value="서울">서울</option>
+                <option value="경기">경기도</option>
+                <option value="강원">강원도</option>
+                <option value="전라">전라도</option>
+                <option value="경상">경상도</option>
+                <option value="제주">제주도</option>
+                <option value="충청">충청도</option>
+              </select>
+              <h2 className="text-3xl font-bold text-on-surface">
+                축제 시작일
+              </h2>
+              <input
+                type="date"
+                id="Festasdate"
+                className="border border-black"
+              />
+              <h2 className="text-3xl font-bold text-on-surface">
+                축제 종료일
+              </h2>
+              <input
+                type="date"
+                id="Festafdate"
+                className="border border-black"
+              />
+            </div>
+            <div>
+              <h2 className="text-3xl font-bold text-on-surface">축제 내용</h2>
+              <textarea
+                className="w-full prose prose-zinc max-w-none text-on-surface-variant leading-relaxed space-y-4"
+                id="cn"
+                value={text}
+                onChange={(e) => onchange(e)}
+              ></textarea>
+            </div>
+          </form>
         </div>
-      </form>
+      </div>
     </>
   )
 }

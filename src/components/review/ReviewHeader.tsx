@@ -1,5 +1,3 @@
-'use client'
-
 import StarRating from "@/components/common/StarRating";
 import { Review } from "@/types/review";
 

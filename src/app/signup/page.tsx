@@ -1,5 +1,6 @@
 'use client'
 
+import { useAuthUI } from '@/components/auth/useAuthUI'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -8,6 +9,7 @@ import DaumPostcodeEmbed from 'react-daum-postcode'
 
 export default function SignUp() {
   const router = useRouter()
+  const { AuthLayout, AuthHeader, AuthInput, AuthButton } = useAuthUI()
   const [loading, setLoading] = useState(false)
   const [isAddressOpen, setIsAddressOpen] = useState(false)
 
@@ -120,175 +122,101 @@ export default function SignUp() {
   }
 
   return (
-    <div className="bg-neutral-50 text-neutral-900 min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background Decorative Elements */}
-      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-primary/5 blur-[120px]"></div>
-        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/5 blur-[120px]"></div>
+    <AuthLayout isWide>
+      <AuthHeader
+        title={
+          <>
+            <span className="text-primary">Festa</span>Plan
+          </>
+        }
+        subtitle="새로운 여정을 함께 시작하세요"
+        isLogo
+      />
+
+      <form className="space-y-5" onSubmit={handleSubmit}>
+        <AuthInput
+          label="이메일 주소"
+          name="email"
+          type="email"
+          placeholder="example@festaplan.com"
+          value={formData.email}
+          onChange={handleChange}
+          icon="mail"
+          required
+        />
+        <AuthInput
+          label="비밀번호"
+          name="password"
+          type="password"
+          placeholder="••••••••"
+          value={formData.password}
+          onChange={handleChange}
+          icon="lock"
+          required
+          minLength={6}
+        />
+        <AuthInput
+          label="비밀번호 확인"
+          name="passwordConfirm"
+          type="password"
+          placeholder="••••••••"
+          value={formData.passwordConfirm}
+          onChange={handleChange}
+          icon="lock_reset"
+          required
+        />
+        <AuthInput
+          label="닉네임"
+          name="nickname"
+          type="text"
+          placeholder="닉네임을 입력해주세요"
+          value={formData.nickname}
+          onChange={handleChange}
+          icon="person"
+          required
+        />
+        <AuthInput
+          label="주소"
+          name="address"
+          type="text"
+          placeholder="클릭하여 주소를 검색해주세요"
+          value={formData.address}
+          onClick={() => setIsAddressOpen(true)}
+          readOnly
+          icon="location_on"
+          className="cursor-pointer"
+          required
+        />
+        {formData.address && (
+          <div className="animate-fade-in mt-3">
+            <AuthInput
+              label="상세 주소"
+              name="detailAddress"
+              type="text"
+              placeholder="나머지 상세 주소를 입력해주세요"
+              value={formData.detailAddress}
+              onChange={handleChange}
+              icon="home"
+              required
+            />
+          </div>
+        )}
+
+        <AuthButton type="submit" loading={loading} loadingText="가입 중...">
+          가입하기
+        </AuthButton>
+      </form>
+
+      <div className="pt-8 flex items-center justify-center space-x-2 text-xs font-medium text-neutral-500">
+        <span>이미 계정이 있으신가요?</span>
+        <Link
+          href="/login"
+          className="text-primary font-bold hover:underline transition-all"
+        >
+          로그인
+        </Link>
       </div>
 
-      {/* Registration Card */}
-      <div className="w-full max-w-md bg-white border border-neutral-300 rounded-xl shadow-card p-8 md:p-10 z-10 relative my-8">
-        <div className="text-center mb-10">
-          <Link href="/">
-            <h1
-              className="text-4xl font-black text-neutral-900 tracking-tighter mb-2"
-              style={{ fontFamily: 'var(--font-display)' }}
-            >
-              <span className="text-primary">Festa</span>Plan
-            </h1>
-          </Link>
-          <p className="text-neutral-500 font-medium text-sm tracking-tight">
-            새로운 여정을 함께 시작하세요
-          </p>
-        </div>
-        <form className="space-y-5" onSubmit={handleSubmit}>
-          {/* Email Field */}
-          <div className="space-y-1.5">
-            <label className="block text-[10px] tracking-widest uppercase font-bold text-neutral-500 ml-1">
-              이메일 주소
-            </label>
-            <div className="relative">
-              <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 text-lg">
-                mail
-              </span>
-              <input
-                required
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full pl-12 pr-4 py-3.5 bg-neutral-100 border-none rounded-xl focus:ring-2 focus:ring-primary text-neutral-900 placeholder:text-neutral-400 text-sm transition-all outline-none"
-                placeholder="example@festaplan.com"
-                type="email"
-              />
-            </div>
-          </div>
-          {/* Password Field */}
-          <div className="space-y-1.5">
-            <label className="block text-[10px] tracking-widest uppercase font-bold text-neutral-500 ml-1">
-              비밀번호
-            </label>
-            <div className="relative">
-              <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 text-lg">
-                lock
-              </span>
-              <input
-                required
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                className="w-full pl-12 pr-4 py-3.5 bg-neutral-100 border-none rounded-xl focus:ring-2 focus:ring-primary text-neutral-900 placeholder:text-neutral-400 text-sm transition-all outline-none"
-                placeholder="••••••••"
-                type="password"
-                minLength={6}
-              />
-            </div>
-          </div>
-          {/* Password Confirmation Field */}
-          <div className="space-y-1.5">
-            <label className="block text-[10px] tracking-widest uppercase font-bold text-neutral-500 ml-1">
-              비밀번호 확인
-            </label>
-            <div className="relative">
-              <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 text-lg">
-                lock_reset
-              </span>
-              <input
-                required
-                name="passwordConfirm"
-                value={formData.passwordConfirm}
-                onChange={handleChange}
-                className="w-full pl-12 pr-4 py-3.5 bg-neutral-100 border-none rounded-xl focus:ring-2 focus:ring-primary text-neutral-900 placeholder:text-neutral-400 text-sm transition-all outline-none"
-                placeholder="••••••••"
-                type="password"
-              />
-            </div>
-          </div>
-          {/* Nickname Field */}
-          <div className="space-y-1.5">
-            <label className="block text-[10px] tracking-widest uppercase font-bold text-neutral-500 ml-1">
-              닉네임
-            </label>
-            <div className="relative">
-              <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 text-lg">
-                person
-              </span>
-              <input
-                required
-                name="nickname"
-                value={formData.nickname}
-                onChange={handleChange}
-                className="w-full pl-12 pr-4 py-3.5 bg-neutral-100 border-none rounded-xl focus:ring-2 focus:ring-primary text-neutral-900 placeholder:text-neutral-400 text-sm transition-all outline-none"
-                placeholder="닉네임을 입력해주세요"
-                type="text"
-              />
-            </div>
-          </div>
-          {/* Address Field */}
-          <div className="space-y-1.5">
-            <label className="block text-[10px] tracking-widest uppercase font-bold text-neutral-500 ml-1">
-              주소
-            </label>
-            <div className="relative">
-              <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 text-lg">
-                location_on
-              </span>
-              <input
-                readOnly
-                required
-                name="address"
-                value={formData.address}
-                onClick={() => setIsAddressOpen(true)}
-                className="w-full pl-12 pr-4 py-3.5 bg-neutral-100 border-none rounded-xl focus:ring-2 focus:ring-primary text-neutral-900 placeholder:text-neutral-400 text-sm transition-all outline-none cursor-pointer"
-                placeholder="클릭하여 주소를 검색해주세요"
-                type="text"
-              />
-            </div>
-          </div>
-          {/* Detailed Address Field (only visible if address is selected) */}
-          {formData.address && (
-            <div className="space-y-1.5 animate-fade-in mt-3">
-              <label className="block text-[10px] tracking-widest uppercase font-bold text-neutral-500 ml-1">
-                상세 주소
-              </label>
-              <div className="relative">
-                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 text-lg">
-                  home
-                </span>
-                <input
-                  required
-                  name="detailAddress"
-                  value={formData.detailAddress}
-                  onChange={handleChange}
-                  className="w-full pl-12 pr-4 py-3.5 bg-neutral-100 border-none rounded-xl focus:ring-2 focus:ring-primary text-neutral-900 placeholder:text-neutral-400 text-sm transition-all outline-none"
-                  placeholder="나머지 상세 주소를 입력해주세요"
-                  type="text"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Signup Button */}
-          <button
-            disabled={loading}
-            className="w-full bg-primary text-white py-4 rounded-full font-bold shadow-lg shadow-primary/20 hover:bg-primary-dark active:scale-95 transition-all duration-150 mt-4 disabled:opacity-50 hover:cursor-pointer"
-            type="submit"
-          >
-            {loading ? '가입 중...' : '가입하기'}
-          </button>
-        </form>
-        <div className="pt-8 flex items-center justify-center space-x-2 text-xs font-medium text-neutral-500">
-          <span>이미 계정이 있으신가요?</span>
-          <Link
-            href="/login"
-            className="text-primary font-bold hover:underline transition-all"
-          >
-            로그인
-          </Link>
-        </div>
-      </div>
-
-      {/* Address Search Modal */}
       {isAddressOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-fade-in"
@@ -302,7 +230,7 @@ export default function SignUp() {
               <h3 className="font-bold text-neutral-900">우편번호 찾기</h3>
               <button
                 type="button"
-                className="text-neutral-500 hover:text-neutral-900 transition-colors"
+                className="text-neutral-500 hover:text-neutral-900 transition-colors cursor-pointer"
                 onClick={() => setIsAddressOpen(false)}
               >
                 <span className="material-symbols-outlined">close</span>
@@ -317,6 +245,6 @@ export default function SignUp() {
           </div>
         </div>
       )}
-    </div>
+    </AuthLayout>
   )
 }

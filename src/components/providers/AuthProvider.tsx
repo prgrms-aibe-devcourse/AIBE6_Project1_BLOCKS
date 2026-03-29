@@ -1,37 +1,110 @@
 'use client'
 
 import { supabase } from '@/lib/supabase'
+import type { User } from '@supabase/supabase-js'
 import { usePathname, useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useState } from 'react'
+
+export type UserProfile = {
+  user_id: string
+  nickname: string
+  address?: string
+}
+
+type AuthContextType = {
+  user: User | null
+  profile: UserProfile | null
+  loading: boolean
+  logout: () => Promise<void>
+}
+
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  profile: null,
+  loading: true,
+  logout: async () => {},
+})
+
+export const useAuth = () => useContext(AuthContext)
 
 const GUEST_ONLY_ROUTES = ['/login', '/signup', '/findpwd']
 const AUTH_REQUIRED_ROUTES = ['/mypage', '/planner']
 
-export default function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [session, setSession] = useState<any>(null)
+export default function AuthProvider({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  const [user, setUser] = useState<User | null>(null)
+  const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const pathname = usePathname()
   const router = useRouter()
 
+  const fetchProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single()
+      if (!error && data) {
+        setProfile(data)
+      } else {
+        setProfile(null)
+      }
+    } catch {
+      setProfile(null)
+    }
+  }
+
   useEffect(() => {
     let mounted = true
+    let isInitialized = false
 
     const initializeAuth = async () => {
-      const { data } = await supabase.auth.getSession()
-      if (mounted) {
-        setSession(data.session)
-        setLoading(false)
+      try {
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession()
+        if (error) throw error
+
+        if (mounted) {
+          setUser(session?.user || null)
+          setLoading(false) // Unlock routing instantly!
+          isInitialized = true
+
+          if (session?.user) {
+            await fetchProfile(session.user.id)
+          }
+        }
+      } catch (err) {
+        if (mounted) setLoading(false)
       }
     }
 
     initializeAuth()
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (mounted) {
-        setSession(session)
-        setLoading(false)
-      }
-    })
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        if (mounted) {
+          setUser(session?.user || null)
+
+          // Ensure routing is unlocked even if initializeAuth hasn't finished
+          if (!isInitialized) {
+            setLoading(false)
+            isInitialized = true
+          }
+
+          if (session?.user) {
+            await fetchProfile(session.user.id)
+          } else {
+            setProfile(null)
+          }
+        }
+      },
+    )
 
     return () => {
       mounted = false
@@ -40,44 +113,77 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   }, [])
 
   useEffect(() => {
-    if (loading) return
+    if (loading || !pathname) return
 
-    const isGuestOnlyRoute = GUEST_ONLY_ROUTES.some((route) => pathname.startsWith(route))
-    const isAuthRequiredRoute = AUTH_REQUIRED_ROUTES.some((route) => pathname.startsWith(route))
+    const isGuestOnlyRoute = GUEST_ONLY_ROUTES.some((route) =>
+      pathname.startsWith(route),
+    )
+    const isAuthRequiredRoute = AUTH_REQUIRED_ROUTES.some((route) =>
+      pathname.startsWith(route),
+    )
     const isPwdChangeRoute = pathname.startsWith('/pwdchange')
 
-    if (session) {
-      // 로긴된 유저가 로그인/회원가입 등 페이지로 접근 시
+    if (user) {
       if (isGuestOnlyRoute) {
         router.replace('/')
       }
     } else {
-      // 비로그인 유저가 마이페이지, 플래너 등에 접근 시
       if (isAuthRequiredRoute) {
         router.replace('/login')
       } else if (isPwdChangeRoute) {
-        // 비밀번호 초기화 페이지는 해시 파라미터가 있어야 함
         const hash = window.location.hash
         if (!hash.includes('access_token')) {
           router.replace('/')
         }
       }
     }
-  }, [session, pathname, loading, router])
+  }, [user, pathname, loading, router])
 
-  // 권한 체크가 필요한 라우트인 경우, 로딩 중이면 콘텐츠가 잠깐 보이지 않도록 스피너 띄움
-  const isProtectedOrGuestRoute = 
-    GUEST_ONLY_ROUTES.some((route) => pathname.startsWith(route)) ||
-    AUTH_REQUIRED_ROUTES.some((route) => pathname.startsWith(route)) ||
-    pathname.startsWith('/pwdchange');
+  const logout = async () => {
+    try {
+      // 1초 이상 응답이 없으면 강제로 다음 단계로 넘김 (Supabase 무한 펜딩 방지)
+      const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('timeout')), 1000),
+      )
+      await Promise.race([supabase.auth.signOut(), timeout])
+    } catch (err) {
+      console.warn('Logout fallback triggered:', err)
+    } finally {
+      // 로컬 화면 상태 초기화
+      setUser(null)
+      setProfile(null)
+
+      // 혹시라도 지워지지 않고 남아있는 Supabase 토큰 강제 삭제 (유령 세션 방지)
+      if (typeof window !== 'undefined' && window.localStorage) {
+        Object.keys(localStorage).forEach((key) => {
+          if (key.startsWith('sb-') && key.endsWith('-auth-token')) {
+            localStorage.removeItem(key)
+          }
+        })
+      }
+
+      // 가장 확실하게 상태를 초기화하며 화면 이동
+      window.location.href = '/login'
+    }
+  }
+
+  const isProtectedOrGuestRoute = pathname
+    ? GUEST_ONLY_ROUTES.some((route) => pathname.startsWith(route)) ||
+      AUTH_REQUIRED_ROUTES.some((route) => pathname.startsWith(route)) ||
+      pathname.startsWith('/pwdchange')
+    : false
 
   if (loading && isProtectedOrGuestRoute) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-neutral-50">
+      <div className="flex items-center justify-center min-h-[100dvh] bg-neutral-50">
         <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
       </div>
     )
   }
 
-  return <>{children}</>
+  return (
+    <AuthContext.Provider value={{ user, profile, loading, logout }}>
+      {children}
+    </AuthContext.Provider>
+  )
 }

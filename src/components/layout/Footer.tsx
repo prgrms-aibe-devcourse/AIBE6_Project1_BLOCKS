@@ -6,7 +6,15 @@ import { usePathname } from 'next/navigation';
 export default function Footer() {
   const pathname = usePathname();
 
-  if (pathname === '/login' || pathname === '/signup') return null;
+  if (
+    !pathname ||
+    pathname.startsWith('/login') ||
+    pathname.startsWith('/signup') ||
+    pathname.startsWith('/findpwd') ||
+    pathname.startsWith('/pwdchange')
+  ) {
+    return null
+  }
 
   return (
     <footer className="w-full border-t border-[var(--color-border)] bg-[var(--color-neutral-50)] mt-16">

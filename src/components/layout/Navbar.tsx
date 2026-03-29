@@ -1,10 +1,10 @@
 'use client'
 
 import { buttonVariants } from '@/components/common/Button'
-import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/components/providers/AuthProvider'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 /* ─────────────────────────────────────────────
    Nav items
@@ -21,54 +21,23 @@ const NAV_ITEMS = [
 export default function Navbar() {
   const pathname = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
-  const [user, setUser] = useState<any>(null)
-  const [nickname, setNickname] = useState('')
-
-  useEffect(() => {
-    const fetchProfile = async (userId: string) => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('nickname')
-        .eq('user_id', userId)
-        .single()
-
-      if (data && !error) {
-        setNickname(data.nickname)
-      }
-    }
-
-    const getSession = async () => {
-      const { data } = await supabase.auth.getSession()
-      setUser(data.session?.user ?? null)
-      if (data.session?.user) {
-        fetchProfile(data.session.user.id)
-      }
-    }
-
-    getSession()
-
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setUser(session?.user ?? null)
-        if (session?.user) {
-          fetchProfile(session.user.id)
-        } else {
-          setNickname('')
-        }
-      },
-    )
-
-    return () => {
-      listener.subscription.unsubscribe()
-    }
-  }, [])
+  
+  const { user, profile, logout } = useAuth()
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
+    await logout()
     setMenuOpen(false)
   }
 
-  if (pathname === '/login' || pathname === '/signup') return null
+  if (
+    !pathname ||
+    pathname.startsWith('/login') ||
+    pathname.startsWith('/signup') ||
+    pathname.startsWith('/findpwd') ||
+    pathname.startsWith('/pwdchange')
+  ) {
+    return null
+  }
 
   return (
     <header

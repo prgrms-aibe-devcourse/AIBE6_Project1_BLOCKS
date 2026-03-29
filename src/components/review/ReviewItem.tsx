@@ -1,3 +1,4 @@
+//추후 use client : 눌렀을 때 댓글 나타나야함
 import { Review } from '@/types/review'
 import StarRating from '@/components/common/StarRating';
 import { formatDate } from '@/utils/date';

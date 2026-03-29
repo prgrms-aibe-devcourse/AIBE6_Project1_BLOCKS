@@ -1,5 +1,3 @@
-'use client'
-
 import ReviewForm from '@/components/review/ReviewForm'
 import ReviewList from '@/components/review/ReviewList'
 import { Profile } from '@/types/profile'

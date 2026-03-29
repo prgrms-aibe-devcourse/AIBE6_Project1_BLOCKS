@@ -1,6 +1,21 @@
+'use client'
+
 import Link from "next/link";
+import { usePathname } from 'next/navigation';
 
 export default function Footer() {
+  const pathname = usePathname();
+
+  if (
+    !pathname ||
+    pathname.startsWith('/login') ||
+    pathname.startsWith('/signup') ||
+    pathname.startsWith('/findpwd') ||
+    pathname.startsWith('/pwdchange')
+  ) {
+    return null
+  }
+
   return (
     <footer className="w-full border-t border-[var(--color-border)] bg-[var(--color-neutral-50)] mt-16">
       <div className="mx-auto max-w-6xl px-4 py-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">

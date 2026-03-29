@@ -4,16 +4,11 @@ import { supabase } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
 import { usePathname, useRouter } from 'next/navigation'
 import React, { createContext, useContext, useEffect, useState } from 'react'
-
-export type UserProfile = {
-  user_id: string
-  nickname: string
-  address?: string
-}
+import { Profile } from '@/types/profile'
 
 type AuthContextType = {
   user: User | null
-  profile: UserProfile | null
+  profile: Profile | null
   loading: boolean
   logout: () => Promise<void>
 }
@@ -22,7 +17,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   profile: null,
   loading: true,
-  logout: async () => {},
+  logout: async () => { },
 })
 
 export const useAuth = () => useContext(AuthContext)
@@ -36,7 +31,7 @@ export default function AuthProvider({
   children: React.ReactNode
 }) {
   const [user, setUser] = useState<User | null>(null)
-  const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
   const pathname = usePathname()
   const router = useRouter()
@@ -180,8 +175,8 @@ export default function AuthProvider({
 
   const isProtectedOrGuestRoute = pathname
     ? GUEST_ONLY_ROUTES.some((route) => pathname.startsWith(route)) ||
-      AUTH_REQUIRED_ROUTES.some((route) => pathname.startsWith(route)) ||
-      pathname.startsWith('/pwdchange')
+    AUTH_REQUIRED_ROUTES.some((route) => pathname.startsWith(route)) ||
+    pathname.startsWith('/pwdchange')
     : false
 
   if (loading && isProtectedOrGuestRoute) {

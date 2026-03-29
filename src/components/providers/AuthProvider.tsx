@@ -126,13 +126,24 @@ export default function AuthProvider({
     if (user) {
       if (isGuestOnlyRoute) {
         router.replace('/')
+      } else if (isPwdChangeRoute) {
+        const hash = window.location.hash
+        // 치명적인 보안 오류 차단: 이미 로그인 상태더라도 만료된 토큰(error=)으로 접근하면 강제로 세션 보호 및 차단
+        if (hash.includes('error=')) {
+          alert('만료되었거나 유효하지 않은 비밀번호 변경 링크입니다.')
+          logout() // 남의 기기에서 남의 세션이 만료된 링크와 섞이는 것을 원천 차단
+        }
       }
     } else {
       if (isAuthRequiredRoute) {
         router.replace('/login')
       } else if (isPwdChangeRoute) {
         const hash = window.location.hash
-        if (!hash.includes('access_token')) {
+        // 로그인 안 한 사용자도 만료된 토큰으로 접근 시 차단
+        if (hash.includes('error=')) {
+          alert('만료되었거나 유효하지 않은 비밀번호 변경 링크입니다.')
+          router.replace('/login')
+        } else if (!hash.includes('access_token')) {
           router.replace('/')
         }
       }

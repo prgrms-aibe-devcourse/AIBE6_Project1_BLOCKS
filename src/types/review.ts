@@ -1,7 +1,7 @@
 import { Profile } from "./profile";
 
 export interface Review {
-  review_id: number;
+  id: number;
   festival_id: number;
   user_id : string;
   contents: string;
@@ -10,6 +10,6 @@ export interface Review {
   rating: number;        // 1 ~ 5
   created_at: string;
 
-  author?: Profile;
+  author: Profile;
   comments?: Comment[];
 }

@@ -4,12 +4,33 @@ import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { v4 as uuidv4 } from 'uuid'
+import { Session } from '@supabase/supabase-js'
 function modifyFesta() {
   const { did } = useParams()
   const router = useRouter()
   const [text, setText] = useState('')
   const [blob, setBlob] = useState<Blob | null>(null)
   const uuid = uuidv4().replace(/-/g, '')
+  const [session, setSession] = useState<Session | null>(null)
+  const [userid, setUserid] = useState('')
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setSession(data.session))
+    checkid()
+  }, [session?.user?.email])
+  const checkid = async () => {
+    if (session?.user?.email) {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('user_id')
+        .eq('email', session?.user?.email)
+        .single()
+      if (error) {
+        console.log(error)
+      } else {
+        setUserid(data.user_id)
+      }
+    }
+  }
   const onmodifyFesta = async (
     e: React.FormEvent<HTMLFormElement>,
     path: Blob | null,
@@ -30,7 +51,7 @@ function modifyFesta() {
           end_date: e.currentTarget.Festafdate.value,
           option2: e.currentTarget.FestaLocation.value,
           address: e.currentTarget.festaLocationDetail.value,
-          user_id: '3695ba2c-d9f5-4a74-9279-e4157ce2765c',
+          user_id: userid,
           picture: uuid + '.jpg',
         },
       ])

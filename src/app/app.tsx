@@ -32,6 +32,7 @@ function App() {
       e.currentTarget.festivalName.value,
     )
   }
+
   const selectAllFesta = async (fes: any) => {
     const { data: festivalName, error } = await supabase
       .from('festivals')

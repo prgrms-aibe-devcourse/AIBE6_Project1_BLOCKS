@@ -1,6 +1,8 @@
 'use client'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { Session } from '@supabase/supabase-js'
+import { supabase } from '@/lib/supabase'
 
 function FormMain({
   onSubmit,
@@ -21,7 +23,11 @@ function FormMain({
       dateInput.value = today
     }
   }, [])
+  const [session, setSession] = useState<Session | null>(null)
 
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setSession(data.session))
+  }, [session?.user?.email])
   const addFesta = () => {
     router.push('/add')
   }
@@ -99,12 +105,16 @@ function FormMain({
                 </div>
               </div>
             </form>
-            <button
-              onClick={addFesta}
-              className="bg-[#FF7676] text-white rounded-full px-8 py-3 font-bold text-sm shadow-lg shadow-primary/30 active:scale-95 transition-transform whitespace-nowrap ml-2"
-            >
-              축제 추가
-            </button>
+            {session?.user?.email != null ? (
+              <button
+                onClick={addFesta}
+                className="bg-[#FF7676] text-white rounded-full px-8 py-3 font-bold text-sm shadow-lg shadow-primary/30 active:scale-95 transition-transform whitespace-nowrap ml-2"
+              >
+                축제 추가
+              </button>
+            ) : (
+              ''
+            )}
           </div>
         </div>
       </section>

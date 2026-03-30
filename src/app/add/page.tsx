@@ -4,21 +4,47 @@ import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { v4 as uuidv4 } from 'uuid'
+import { Session } from '@supabase/supabase-js'
 
 function addFesta() {
   const router = useRouter()
   const [text, setText] = useState('')
   const [blob, setBlob] = useState<Blob | null>(null)
+  const [userid, setUserid] = useState('')
+  const [session, setSession] = useState<Session | null>(null)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setSession(data.session))
+    checkid()
+  }, [session?.user?.email])
+
+  const checkid = async () => {
+    if (session?.user?.email) {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('user_id')
+        .eq('email', session?.user?.email)
+        .single()
+      if (error) {
+        console.log(error)
+      } else {
+        setUserid(data.user_id)
+      }
+    }
+  }
+
   const onaddFesta = async (
     e: React.FormEvent<HTMLFormElement>,
     path: Blob | null,
   ) => {
     e.preventDefault()
+
+    const uuid = uuidv4().replace(/-/g, '')
     if (!path) {
       alert('이미지를 선택해주세요.')
       return
     }
-    const uuid = uuidv4().replace(/-/g, '')
+    console.log(userid)
     const { error } = await supabase
       .from('festivals')
       .insert([
@@ -30,7 +56,7 @@ function addFesta() {
           end_date: e.currentTarget.Festafdate.value,
           option2: e.currentTarget.FestaLocation.value,
           address: e.currentTarget.festaLocationDetail.value,
-          user_id: '3695ba2c-d9f5-4a74-9279-e4157ce2765c',
+          user_id: userid,
           picture: uuid + '.jpg',
           rating: 0,
         },
@@ -51,6 +77,7 @@ function addFesta() {
       }
     }
   }
+
   const onchange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     e.preventDefault()
 

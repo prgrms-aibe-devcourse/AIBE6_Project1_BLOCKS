@@ -36,7 +36,7 @@ export default function AuthProvider({
   const pathname = usePathname()
   const router = useRouter()
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfile = async (userId: string, authUser?: User) => {
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -45,10 +45,50 @@ export default function AuthProvider({
         .single()
       if (!error && data) {
         setProfile(data)
+      } else if (error?.code === 'PGRST116' && authUser) {
+        // 최초 소셜 로그인 등 프로필이 없는 경우 자동 생성
+        let baseName = 'User'
+        if (authUser.user_metadata) {
+          baseName =
+            authUser.user_metadata.name ||
+            authUser.user_metadata.full_name ||
+            authUser.user_metadata.nickname ||
+            (authUser.email ? authUser.email.split('@')[0] : 'User')
+        }
+        
+        // 닉네임 중복을 피하기 위해 임의의 숫자 부여
+        const defaultNickname = `${baseName}_${Math.floor(Math.random() * 10000)}`
+
+        const { data: newProfile, error: insertError } = await supabase
+          .from('profiles')
+          .insert({
+            user_id: userId,
+            nickname: defaultNickname,
+          })
+          .select()
+          .single()
+
+        if (!insertError && newProfile) {
+          setProfile(newProfile)
+        } else if (insertError?.code === '23505') {
+          // 동시성 문제로 이미 다른 요청에서 프로필이 생성된 경우 재조회
+          const { data: retryData } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('user_id', userId)
+            .single()
+          if (retryData) {
+            setProfile(retryData)
+          }
+        } else {
+          console.error('Failed to create auto profile:', insertError)
+          setProfile(null)
+        }
       } else {
         setProfile(null)
       }
-    } catch {
+    } catch (err) {
+      console.error('Fetch profile error:', err)
       setProfile(null)
     }
   }
@@ -57,8 +97,32 @@ export default function AuthProvider({
     let mounted = true
     let isInitialized = false
 
+    // 비상 탈출을 위한 타이머: 카카오 로그인 뒤로가기 등에서 getSession이 계속 펜딩되는 현상 방지.
+    const fallbackTimer = setTimeout(() => {
+      if (mounted && !isInitialized) {
+        console.warn('Auth initialization timed out, unlocking router...')
+        setLoading(false)
+        isInitialized = true
+      }
+    }, 800)
+
+    // BFCache (뒤로가기) 복원 시 강제로 잠금 해제
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted && mounted) {
+        console.warn('Page restored from BFCache, unlocking router...')
+        setLoading(false)
+        isInitialized = true
+      }
+    }
+    window.addEventListener('pageshow', handlePageShow)
+
     const initializeAuth = async () => {
       try {
+        // OAuth 취소 등으로 인한 복귀 시 Hash 파싱 중 무한 대기하는 Supabase 버그 우회
+        if (typeof window !== 'undefined' && window.location.hash.includes('error=')) {
+          window.history.replaceState(null, '', window.location.pathname + window.location.search)
+        }
+
         const {
           data: { session },
           error,
@@ -71,7 +135,7 @@ export default function AuthProvider({
           isInitialized = true
 
           if (session?.user) {
-            await fetchProfile(session.user.id)
+            await fetchProfile(session.user.id, session.user)
           }
         }
       } catch (err) {
@@ -93,7 +157,7 @@ export default function AuthProvider({
           }
 
           if (session?.user) {
-            await fetchProfile(session.user.id)
+            await fetchProfile(session.user.id, session.user)
           } else {
             setProfile(null)
           }
@@ -103,6 +167,8 @@ export default function AuthProvider({
 
     return () => {
       mounted = false
+      clearTimeout(fallbackTimer)
+      window.removeEventListener('pageshow', handlePageShow)
       listener.subscription.unsubscribe()
     }
   }, [])
@@ -173,13 +239,14 @@ export default function AuthProvider({
     }
   }
 
-  const isProtectedOrGuestRoute = pathname
-    ? GUEST_ONLY_ROUTES.some((route) => pathname.startsWith(route)) ||
-    AUTH_REQUIRED_ROUTES.some((route) => pathname.startsWith(route)) ||
-    pathname.startsWith('/pwdchange')
+  // GUEST_ONLY_ROUTES('/login' 등) 에서는 로딩 스피너를 아예 띄우지 않고 페이지를 바로 노출합니다.
+  // 이로써 카카오 로그인창에서 뒤로가기 시 흔히 발생하는 브라우저 BFCache 무한 펜딩 상태를 원천 차단합니다.
+  const isProtectedRoute = pathname
+    ? AUTH_REQUIRED_ROUTES.some((route) => pathname.startsWith(route)) ||
+      pathname.startsWith('/pwdchange')
     : false
 
-  if (loading && isProtectedOrGuestRoute) {
+  if (loading && isProtectedRoute) {
     return (
       <div className="flex items-center justify-center min-h-[100dvh] bg-neutral-50">
         <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>

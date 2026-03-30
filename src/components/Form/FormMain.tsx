@@ -58,14 +58,11 @@ function FormMain({
                     className="bg-transparent rounded-xl border-none text-sm font-bold px-4 py-2 focus:ring-0 cursor-pointer"
                   >
                     <option value="모두">테마</option>
-                    <option value="음악">음악</option>
-                    <option value="꽃">꽃</option>
-                    <option value="동물">동물</option>
-                    <option value="음식">음식</option>
-                    <option value="문화">문화</option>
-                    <option value="레저">레저</option>
-                    <option value="과학">과학</option>
-                    <option value="종교">종교</option>
+                    <option value="문화">문화/예술</option>
+                    <option value="예술, 음식, 음악">예술, 음식, 음악</option>
+                    <option value="역사, 자연">역사, 자연</option>
+                    <option value="공연, 전통">공연, 전통</option>
+                    <option value="야외, 스포츠">야외, 스포츠</option>
                   </select>
                   <div className="h-6 w-px bg-outline-variant hidden md:block"></div>
                   <select

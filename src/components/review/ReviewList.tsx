@@ -7,9 +7,10 @@ import { EmptyIcon } from "@/components/common/EmptyIcon";
 
 
 interface ReviewProps {
-    festivalId: string,
+    festivalId: number,
     reviews: Review[],
     currentUserId: string,
+    onDeleteReview?: (reviewId: number) => void;
 }
 
 type SortType = "recent" | "high" | "low";
@@ -20,7 +21,7 @@ const SORT_OPTIONS: { label: string; value: SortType }[] = [
     { label: "별점 낮은순", value: "low" },
 ];
 
-function ReviewList({ festivalId, reviews, currentUserId }: ReviewProps) {
+function ReviewList({ festivalId, reviews, currentUserId, onDeleteReview }: ReviewProps) {
     const [sort, setSort] = useState<SortType>("recent");
 
 
@@ -67,7 +68,12 @@ function ReviewList({ festivalId, reviews, currentUserId }: ReviewProps) {
             ) : (
                 <div>
                     {sorted.map((review) => (
-                        <ReviewItem key={review.id} review={review} currentUserId={currentUserId} />
+                        <ReviewItem
+                            key={review.id}
+                            review={review}
+                            currentUserId={currentUserId}
+                            onDeleteReview={onDeleteReview}
+                        />
                     ))}
                 </div>
             )}

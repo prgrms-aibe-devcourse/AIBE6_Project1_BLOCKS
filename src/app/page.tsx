@@ -1,5 +1,9 @@
-import Image from "next/image";
+import App from './app'
 
 export default function Home() {
-  return <div>메인페이지</div>;
+  return (
+    <>
+      <App />
+    </>
+  )
 }

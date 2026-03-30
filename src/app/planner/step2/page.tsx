@@ -1,30 +1,30 @@
 'use client'
 
-import { useRef, useState, Suspense } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
-import DaumPostcode from 'react-daum-postcode'
+import KakaoPlacePicker from '@/components/planner/KakaoPlacePicker'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Suspense, useEffect, useRef, useState } from 'react'
 
 interface FestivalCardProps {
-  id: number
+  festival_id: number
   title: string
   rating: number
-  description: string
+  contents: string
   start_date: string
   end_date: string
-  image: string
+  picture: string
   isSelected: boolean
   onSelect: (id: number) => void
   onDateChange?: (date: string) => void
 }
 
 const FestivalCard = ({
-  id,
+  festival_id,
   title,
   rating,
-  description,
+  contents,
   start_date,
   end_date,
-  image,
+  picture,
   isSelected,
   onSelect,
   onDateChange,
@@ -52,12 +52,21 @@ const FestivalCard = ({
     <article
       className={`bg-white border border-[#D1D1D1] rounded-2xl overflow-hidden flex flex-col sm:flex-row group transition-all duration-300 ${isSelected ? 'ring-2 ring-[#f26565]' : 'hover:shadow-md'}`}
     >
-      <div className="w-full sm:w-48 h-48 relative overflow-hidden">
-        <img
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-          src={image}
-          alt={title}
-        />
+      <div className="w-full sm:w-48 h-48 relative overflow-hidden bg-zinc-100 flex-shrink-0">
+        {picture ? (
+          <img
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            src={picture}
+            alt={title}
+          />
+        ) : (
+          <div className="w-full h-full flex flex-col items-center justify-center text-zinc-400">
+            <span className="material-symbols-outlined text-4xl mb-1">
+              image_not_supported
+            </span>
+            <span className="text-xs">이미지 없음</span>
+          </div>
+        )}
         {isSelected && (
           <div className="absolute top-3 left-3 bg-primary px-3 py-1 rounded-full text-white text-[10px] font-bold uppercase tracking-widest">
             Selected
@@ -71,11 +80,11 @@ const FestivalCard = ({
             <span
               className={`${isSelected ? 'text-primary' : 'text-on-surface-variant'} font-bold`}
             >
-              {rating} ★
+              {rating || '0.0'} ★
             </span>
           </div>
           <p className="text-on-surface-variant text-sm line-clamp-2 mb-4">
-            {description}
+            {contents}
           </p>
           <div className="flex items-center text-sm text-on-surface-variant font-medium mb-4">
             <span className="material-symbols-outlined mr-2 text-primary">
@@ -104,15 +113,17 @@ const FestivalCard = ({
               ))}
             </select>
             <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-lg">
-              <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-lg">
-                expand_more
-              </span>
+              expand_more
             </span>
           </div>
         </div>
         <button
-          onClick={() => onSelect(id)}
-          className={`mt-4 w-full py-3 rounded-full font-bold text-sm transition-all flex items-center justify-center cursor-pointer border border-primary hover:bg-primary/5 ${isSelected ? 'bg-primary text-white' : 'bg-white border border-primary text-primary hover:bg-[#f26565]/5'}`}
+          onClick={() => onSelect(festival_id)}
+          className={`mt-4 w-full py-3 rounded-full font-bold text-sm transition-all flex items-center justify-center cursor-pointer border border-primary ${
+            isSelected
+              ? 'bg-primary text-white'
+              : 'bg-white text-primary hover:bg-primary hover:text-white'
+          }`}
         >
           {isSelected && (
             <span
@@ -331,20 +342,46 @@ const Calendar = ({
 }
 
 function Step2Content() {
-  const [selectedFestivalId, setSelectedFestivalId] = useState(1)
+  const searchParams = useSearchParams()
+  const router = useRouter()
+
+  const [festivals, setFestivals] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  const [selectedFestivalId, setSelectedFestivalId] = useState<number | null>(
+    null,
+  )
   const [selectedRange, setSelectedRange] = useState<RangeType>(() => {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     return { start: today, end: today }
   })
   const [currentDate, setCurrentDate] = useState(new Date())
-  const [isPostcodeOpen, setIsPostcodeOpen] = useState(false)
-  const [address, setAddress] = useState('')
+  const [address, setAddress] = useState('') // 카카오 지도에서 선택한 장소명
   const [visitDates, setVisitDates] = useState<Record<number, string>>({})
   const [isGenerating, setIsGenerating] = useState(false)
 
-  const searchParams = useSearchParams()
-  const router = useRouter()
+  useEffect(() => {
+    const fetchFestivals = async () => {
+      setLoading(true)
+      try {
+        const category = searchParams.get('category') || ''
+        const res = await fetch(
+          `/api/festivals?category=${encodeURIComponent(category)}`,
+        )
+        const data = await res.json()
+        if (data.festivals && data.festivals.length > 0) {
+          setFestivals(data.festivals)
+          setSelectedFestivalId(data.festivals[0].festival_id)
+        }
+      } catch (err) {
+        console.error(err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchFestivals()
+  }, [searchParams])
 
   const getInitialOption = (festival: any) => {
     if (!festival) return ''
@@ -366,33 +403,25 @@ function Step2Content() {
     }
   }
 
-  const handleComplete = (data: any) => {
-    let fullAddress = data.address
-    let extraAddress = ''
-
-    if (data.addressType === 'R') {
-      if (data.bname !== '') {
-        extraAddress += data.bname
-      }
-      if (data.buildingName !== '') {
-        extraAddress +=
-          extraAddress !== '' ? `, ${data.buildingName}` : data.buildingName
-      }
-      fullAddress += extraAddress !== '' ? ` (${extraAddress})` : ''
-    }
-
-    setAddress(fullAddress)
-    setIsPostcodeOpen(false)
+  // 카카오 지도에서 장소 선택 시 호출
+  const handlePlaceSelect = (placeName: string) => {
+    setAddress(placeName)
   }
+
+  const selectedFestival =
+    festivals.find((f) => f.festival_id === selectedFestivalId) || festivals[0]
 
   const handleGenerate = async () => {
     if (!address) return alert('출발지를 입력해주세요.')
     if (!selectedRange.start) return alert('여행 날짜를 선택해주세요.')
+    if (!selectedFestival) return alert('축제를 선택해주세요.')
 
     setIsGenerating(true)
 
     const startDate = selectedRange.start?.toISOString().split('T')[0]
-    const endDate = selectedRange.end ? selectedRange.end.toISOString().split('T')[0] : startDate
+    const endDate = selectedRange.end
+      ? selectedRange.end.toISOString().split('T')[0]
+      : startDate
 
     const payload = {
       address,
@@ -400,20 +429,22 @@ function Step2Content() {
       endDate,
       festival: {
         title: selectedFestival.title,
-        date: visitDates[selectedFestivalId] || getInitialOption(selectedFestival)
+        date:
+          visitDates[selectedFestivalId || -1] ||
+          getInitialOption(selectedFestival),
       },
       preferences: {
         category: searchParams.get('category'),
         style: searchParams.get('style'),
-        companion: searchParams.get('companion')
-      }
+        companion: searchParams.get('companion'),
+      },
     }
 
     try {
       const res = await fetch('/api/plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       })
       const data = await res.json()
       if (data.error) throw new Error(data.error)
@@ -423,45 +454,6 @@ function Step2Content() {
       setIsGenerating(false)
     }
   }
-
-  const festivals = [
-    {
-      id: 1,
-      title: '진해 군항제',
-      rating: 4.9,
-      description:
-        '흐드러지게 피어난 벚꽃 아래에서 펼쳐지는 한국 최고의 벚꽃 축제입니다. 해군사관학교 개방 등 특별한 이벤트가 가득합니다.',
-      start_date: '2026-03-22',
-      end_date: '2026-04-01',
-      image:
-        'https://lh3.googleusercontent.com/aida-public/AB6AXuB6xATSxIuugqnSMYfaSDLKecYX8K5sPACEzFLVM6f9HjBQenPBt2AEtTBCVc7beQfMWYixVN30RKV6IO5H9mul05NC0vDrYiYwvQRBteyBf9fcVbDsbRQIzj1MGbM1bgYR6hdbSZLN91C0h4Qq3IvBLWGDzHBqHzWUVAUe1BTTOqREjccCK6f6EwXYyX-nwGsah74OaSYuAfpk0XympjOAXAGucJOW3sJymlD4Qx6rBaC5TBSMpRYSgiBjB78w7Lly30pfjuwmJug',
-    },
-    {
-      id: 2,
-      title: '서울 세계불꽃축제',
-      rating: 4.7,
-      description:
-        '여의도 밤하늘을 수놓는 화려한 불꽃의 향연. 세계 각국의 기술력이 결합된 예술적인 불꽃 쇼를 감상하세요.',
-      start_date: '2026-10-05',
-      end_date: '2026-10-06',
-      image:
-        'https://lh3.googleusercontent.com/aida-public/AB6AXuA3PT2ky9NDvMTkOA7zup80gcK88tIVv81VdeV13vrVroKSY3mz6MOAKfiCsZePfFdQbkpXCbpESS1Tje34xvqULS6mf3d49Isk_UAU43hnRjzh7Jx8I64Qyju7HPo7yZypxWaW0wgufVzNJ4c3Vg07Sg7s0p-i1oYS4Q4xHc-6lLa9gH5wSu8ltKz9hbxobCtMAE4bkKLsQo8_E-hrm5pyB8raSLXnfFrv5jgY8jes9n92ezKmnwW_3scIbIrt02laAmiFBpub_ww',
-    },
-    {
-      id: 3,
-      title: '내장산 단풍축제',
-      rating: 4.8,
-      description:
-        '단풍 터널로 유명한 내장산의 가을 정취를 만끽하세요. 가을의 절정을 느끼기에 가장 완벽한 장소입니다.',
-      start_date: '2026-10-25',
-      end_date: '2026-11-10',
-      image:
-        'https://lh3.googleusercontent.com/aida-public/AB6AXuAMXvBrvdfjBifTQb-P3FXPmeWcICgxNoaU67jSDhhGH4VzSxz1OVTKQAusJ5VmErQ9aUsZ3l_VavSYS9E0nLI-fnw7MHvvk19sZ2XohC8f6mlQjZ5VsP_5YzRNhoa6VbEY9KY1RGJ1CrH9lz0pjURvva_LYMRlzmhF5DOX5i3_1UmkL_McOte7qlUlkYNoOFtKGICyzDe5UZQRn8rlaH0uX8OhJlptUP92MzPI7mzKmAUym-usX-PKVp8BSE_vjb4ef7oVHuWHp9U',
-    },
-  ]
-
-  const selectedFestival =
-    festivals.find((f) => f.id === selectedFestivalId) || festivals[0]
 
   const formatDateString = (date: Date | null) => {
     if (!date) return ''
@@ -483,6 +475,36 @@ function Step2Content() {
       return `${formatDateString(selectedRange.start)} (당일치기)`
     }
     return '날짜를 선택해주세요'
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 text-neutral-500 font-medium">
+        조건에 맞는 축제 리스트를 불러오는 중입니다...
+      </div>
+    )
+  }
+
+  if (festivals.length === 0) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+        <span className="material-symbols-outlined text-6xl text-neutral-300 mb-4">
+          sentiment_dissatisfied
+        </span>
+        <h2 className="text-xl font-bold text-neutral-700 mb-2">
+          조건에 맞는 축제가 없습니다.
+        </h2>
+        <p className="text-neutral-500 text-sm mb-6">
+          다른 카테고리나 기간을 선택해보세요.
+        </p>
+        <button
+          onClick={() => router.back()}
+          className="px-6 py-3 bg-primary text-white font-bold rounded-full shadow-lg shadow-primary/20 hover:opacity-90 transition-all"
+        >
+          뒤로 돌아가기
+        </button>
+      </div>
+    )
   }
 
   return (
@@ -522,12 +544,14 @@ function Step2Content() {
               <div className="grid gap-6">
                 {festivals.map((festival) => (
                   <FestivalCard
-                    key={festival.id}
+                    key={festival.festival_id}
                     {...festival}
-                    isSelected={selectedFestivalId === festival.id}
+                    isSelected={selectedFestivalId === festival.festival_id}
                     onSelect={(id) => {
                       setSelectedFestivalId(id)
-                      const selected = festivals.find((f) => f.id === id)
+                      const selected = festivals.find(
+                        (f) => f.festival_id === id,
+                      )
                       if (selected) {
                         const [sy, sm] = selected.start_date
                           .split('-')
@@ -539,9 +563,9 @@ function Step2Content() {
                     onDateChange={(date) => {
                       setVisitDates((prev) => ({
                         ...prev,
-                        [festival.id]: date,
+                        [festival.festival_id]: date,
                       }))
-                      if (selectedFestivalId === festival.id) {
+                      if (selectedFestivalId === festival.festival_id) {
                         handleScrollToForm()
                       }
                     }}
@@ -551,37 +575,18 @@ function Step2Content() {
             </section>
 
             <section ref={formRef} className="order-1 lg:order-2 lg:col-span-5">
-              <div className="sticky top-28 space-y-8">
+              <div className="sticky top-28 space-y-8 max-h-[calc(100vh-8rem)] overflow-y-auto pr-1">
                 <div className="bg-white border border-[#D1D1D1] rounded-2xl p-6">
                   <h2 className="text-xl font-bold flex items-center mb-4">
-                    <span className="mr-2 text-primary">
-                      <span className="material-symbols-outlined mr-2 text-primary">
-                        location_on
-                      </span>
+                    <span className="material-symbols-outlined mr-2 text-primary">
+                      location_on
                     </span>
                     여행 출발지
                   </h2>
-                  <div className="relative">
-                    <input
-                      className="w-full px-4 py-3 bg-[#F4F4F4] border-0 rounded-xl focus:ring-2 focus:ring-primary text-sm font-medium transition-all cursor-pointer"
-                      placeholder="어디에서 출발하시나요? 클릭하여 주소 검색"
-                      type="text"
-                      value={address}
-                      readOnly
-                      onClick={() => setIsPostcodeOpen(true)}
-                    />
-                  </div>
-                  {isPostcodeOpen && (
-                    <div className="mt-4 border border-[#D1D1D1] rounded-xl overflow-hidden relative shadow-sm">
-                      <button
-                        className="absolute top-2 right-2 z-10 bg-white/80 p-1 rounded-full text-xs text-black shadow-md hover:bg-gray-100 w-8 h-8 flex items-center justify-center font-bold"
-                        onClick={() => setIsPostcodeOpen(false)}
-                      >
-                        ✕
-                      </button>
-                      <DaumPostcode onComplete={handleComplete} autoClose />
-                    </div>
-                  )}
+                  <KakaoPlacePicker
+                    selectedPlace={address}
+                    onSelect={handlePlaceSelect}
+                  />
                 </div>
 
                 <div className="bg-white border border-[#D1D1D1] rounded-2xl p-8 space-y-8">
@@ -618,11 +623,11 @@ function Step2Content() {
                       <p className="text-xl font-bold">{getDurationText()}</p>
                       <p className="text-sm font-medium text-primary mt-2">
                         방문 예정일:{' '}
-                        {visitDates[selectedFestivalId] ||
+                        {visitDates[selectedFestivalId || -1] ||
                           getInitialOption(selectedFestival)}
                       </p>
                     </div>
-                    <button 
+                    <button
                       onClick={handleGenerate}
                       disabled={isGenerating}
                       className="w-full py-5 rounded-full bg-primary hover:bg-[#ff6161] disabled:opacity-70 disabled:hover:bg-primary cursor-pointer text-white font-black text-lg transition-all shadow-xl shadow-[#f26565]/20 active:scale-95 flex items-center justify-center group"
@@ -633,7 +638,9 @@ function Step2Content() {
                       >
                         {isGenerating ? 'hourglass_empty' : 'auto_fix_high'}
                       </span>
-                      {isGenerating ? 'AI가 일정을 짜고 있습니다...' : 'AI 플랜 생성하기'}
+                      {isGenerating
+                        ? 'AI가 일정을 짜고 있습니다...'
+                        : 'AI 플랜 생성하기'}
                     </button>
                   </div>
                 </div>
@@ -648,7 +655,13 @@ function Step2Content() {
 
 export default function Step2() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          Loading...
+        </div>
+      }
+    >
       <Step2Content />
     </Suspense>
   )

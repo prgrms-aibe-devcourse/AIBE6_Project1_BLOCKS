@@ -1,6 +1,8 @@
 'use client'
 
 import { buttonVariants } from '@/components/common/Button'
+import { useAuth } from '@/components/providers/AuthProvider'
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
@@ -20,6 +22,23 @@ const NAV_ITEMS = [
 export default function Navbar() {
   const pathname = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
+
+  const { user, profile, logout } = useAuth()
+
+  const handleLogout = async () => {
+    await logout()
+    setMenuOpen(false)
+  }
+
+  if (
+    !pathname ||
+    pathname.startsWith('/login') ||
+    pathname.startsWith('/signup') ||
+    pathname.startsWith('/findpwd') ||
+    pathname.startsWith('/pwdchange')
+  ) {
+    return null
+  }
 
   return (
     <header
@@ -50,7 +69,7 @@ export default function Navbar() {
                 className={[
                   'px-3 py-1.5 text-sm rounded-pill transition-fast',
                   active
-                    ? 'text-[var(--color-primary)] font-semibold bg-[var(--color-primary-light)]'
+                    ? 'text-primary font-semibold bg-primary-light'
                     : 'text-[var(--color-neutral-700)] hover:text-[var(--color-primary)] hover:bg-[var(--color-neutral-50)]',
                 ].join(' ')}
               >
@@ -62,23 +81,50 @@ export default function Navbar() {
 
         {/* Right Actions */}
         <div className="hidden md:flex items-center gap-2">
-          {/* Bell icon */}
-          <button
-            aria-label="알림"
-            className="p-2 rounded-pill text-[var(--color-neutral-500)] hover:text-[var(--color-primary)] hover:bg-[var(--color-neutral-100)] transition-fast"
-          >
-            <BellIcon />
-          </button>
-
-          {/* User / Avatar */}
-          <Link href="/mypage">
-            <button
-              aria-label="마이페이지"
-              className="p-2 rounded-pill text-[var(--color-neutral-500)] hover:text-[var(--color-primary)] hover:bg-[var(--color-neutral-100)] transition-fast"
-            >
-              <UserIcon />
-            </button>
-          </Link>
+          {/* 로그인하면 사용자 아바타 아이콘 -> 모달 열림, 아니면 로그인 버튼 */}
+          {user ? (
+            <div className="flex items-center gap-2">
+              <button
+                className={buttonVariants({
+                  variant: 'outline',
+                  size: 'md',
+                })}
+                onClick={handleLogout}
+              >
+                로그아웃
+              </button>
+              {/* User / Avatar */}
+              <button
+                className={buttonVariants({
+                  variant: 'ghost',
+                  size: 'icon',
+                })}
+              >
+                {profile?.image ? (
+                  <Image
+                    src={profile.image}
+                    alt="Profile"
+                    width={24}
+                    height={24}
+                    className="rounded-full"
+                  />
+                ) : (
+                  <UserIcon />
+                )}
+              </button>
+            </div>
+          ) : (
+            <Link href={'/login'}>
+              <button
+                className={buttonVariants({
+                  variant: 'primary',
+                  size: 'md',
+                })}
+              >
+                로그인
+              </button>
+            </Link>
+          )}
         </div>
 
         {/* Mobile Hamburger */}
@@ -113,16 +159,30 @@ export default function Navbar() {
             )
           })}
           <hr className="my-1 border-[var(--color-border)]" />
-          <Link
-            href="/your-path"
-            className={buttonVariants({
-              variant: 'primary',
-              size: 'md',
-              fullWidth: true,
-            })}
-          >
-            Your Text
-          </Link>
+          {user ? (
+            <button
+              onClick={handleLogout}
+              className={buttonVariants({
+                variant: 'outline',
+                size: 'md',
+                fullWidth: true,
+              })}
+            >
+              로그아웃
+            </button>
+          ) : (
+            <Link
+              href="/login"
+              onClick={() => setMenuOpen(false)}
+              className={buttonVariants({
+                variant: 'primary',
+                size: 'md',
+                fullWidth: true,
+              })}
+            >
+              로그인 / 회원가입
+            </Link>
+          )}
         </div>
       )}
     </header>
@@ -130,34 +190,7 @@ export default function Navbar() {
 }
 
 /* ── Icon Helpers ── */
-function SearchIcon() {
-  return (
-    <svg
-      className="w-4 h-4"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      viewBox="0 0 24 24"
-    >
-      <circle cx="11" cy="11" r="8" />
-      <path d="m21 21-4.35-4.35" />
-    </svg>
-  )
-}
-function BellIcon() {
-  return (
-    <svg
-      className="w-4 h-4"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      viewBox="0 0 24 24"
-    >
-      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-    </svg>
-  )
-}
+
 function UserIcon() {
   return (
     <svg

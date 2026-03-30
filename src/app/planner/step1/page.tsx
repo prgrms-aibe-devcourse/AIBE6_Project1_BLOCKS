@@ -11,12 +11,12 @@ export default function Step1() {
   const [companion, setCompanion] = useState<string | null>(null)
 
   const categories = [
-    { id: 'food', label: '음식', icon: 'restaurant' },
-    { id: 'culture', label: '문화/예술', icon: 'palette' },
-    { id: 'music', label: '음악/공연', icon: 'confirmation_number' },
-    { id: 'history', label: '전통/역사', icon: 'temple_buddhist' },
-    { id: 'nature', label: '자연/야외', icon: 'park' },
-    { id: 'sports', label: '스포츠', icon: 'sports_soccer' },
+    { id: '음식', label: '음식', icon: 'restaurant' },
+    { id: '문화/예술', label: '문화/예술', icon: 'palette' },
+    { id: '음악/공연', label: '음악/공연', icon: 'confirmation_number' },
+    { id: '전통/역사', label: '전통/역사', icon: 'temple_buddhist' },
+    { id: '자연/야외', label: '자연/야외', icon: 'park' },
+    { id: '스포츠', label: '스포츠', icon: 'sports_soccer' },
   ]
 
   const styles = [

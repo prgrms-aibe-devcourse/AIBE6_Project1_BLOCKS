@@ -1,7 +1,10 @@
 import '@/app/globals.css'
 import Footer from '@/components/layout/Footer'
 import Navbar from '@/components/layout/Navbar'
+import AuthProvider from '@/components/providers/AuthProvider'
+import { FestivalProvider } from '@/context/FestivalContext'
 import type { Metadata } from 'next'
+import Script from 'next/script'
 
 export const metadata: Metadata = {
   title: {
@@ -31,13 +34,21 @@ export default function RootLayout({
       <head>
         <link
           rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,0"
         />
       </head>
       <body className="min-h-screen flex flex-col">
-        <Navbar />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        <AuthProvider>
+          <Navbar />
+          <main className="flex-1">
+            <Script
+              src="//dapi.kakao.com/v2/maps/sdk.js?appkey=dc37dc09b327ae5d0055aebf692b7f78&autoload=false&libraries=services"
+              strategy="afterInteractive"
+            />
+            <FestivalProvider>{children}</FestivalProvider>
+          </main>
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   )

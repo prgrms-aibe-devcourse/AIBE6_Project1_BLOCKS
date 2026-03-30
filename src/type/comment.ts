@@ -10,3 +10,15 @@ export interface Comment {
   parent_id?: string
   replies?: Comment[]
 }
+
+export interface DbComment {
+  comment_id: number
+  created_at: string
+  contents: string
+  review_id: number
+  parent_id: number | null
+  like_count: number
+  updated_at?: string | null
+  user_id: string
+  user: { user_name: string }[]
+}

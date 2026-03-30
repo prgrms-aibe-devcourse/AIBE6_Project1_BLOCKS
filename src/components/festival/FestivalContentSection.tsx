@@ -3,9 +3,9 @@ import { getAdminUuid } from '@/actions/admin'
 import { useAuth } from '@/components/providers/AuthProvider'
 import MapContainer from '@/function/map'
 import { supabase } from '@/lib/supabase'
+import { Session } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-
 function FestivalContentSection({ id }: { id: number }) {
   const [festivalName, setFestivalName] = useState<
     {
@@ -23,6 +23,12 @@ function FestivalContentSection({ id }: { id: number }) {
       picture: string
     }[]
   >([])
+  const [session, setSession] = useState<Session | null>(null)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setSession(data.session))
+  }, [session?.user?.email])
+
   const router = useRouter()
   const cid = Number(id)
 
@@ -125,31 +131,37 @@ function FestivalContentSection({ id }: { id: number }) {
         </ul>
       </section>
       <div className="max-w-4xl mx-auto px-6 -mt-10 relative z-10 pb-24">
-        {isAdmin && (
-          <div className="bg-white rounded-xl shadow-lg border border-neutral-200 flex p-1 mb-8">
-            <button className="flex-1 py-4 text-sm font-bold text-[#FF7676] bg-primary/10 rounded-lg">
+        {session?.user?.email != null ? (
+          <div className="bg-white rounded-xl shadow-lg border border-outline-variant flex p-1 mb-8">
+            <button className="flex-1 py-4 text-sm font-bold text-[#FF7676] bg-secondary-container rounded-lg">
               개요
             </button>
+
             <button
               onClick={() => modifyFesta(cid)}
-              className="flex-1 py-4 text-sm font-semibold text-neutral-500 hover:bg-neutral-50 transition-colors rounded-lg"
+              className="flex-1 py-4 text-sm font-semibold text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg"
             >
               수정
             </button>
             <button
               onClick={() => deleteFesta(cid)}
-              className="flex-1 py-4 text-sm font-semibold text-neutral-500 hover:bg-neutral-50 transition-colors rounded-lg"
+              className="flex-1 py-4 text-sm font-semibold text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg"
             >
               삭제
             </button>
           </div>
+        ) : (
+          <div className="bg-white rounded-xl shadow-lg border border-outline-variant flex p-1 mb-8">
+            <button className="flex-1 py-4 text-sm font-bold text-[#FF7676] bg-secondary-container rounded-lg">
+              개요
+            </button>
+          </div>
         )}
-
         {festivalName.map((item) => (
           <ul key={item.festival_id}>
             <div className="space-y-8">
-              <div className="inline-block bg-white rounded-xl shadow-sm border border-neutral-200 p-8 w-full">
-                <h2 className="font-headline text-2xl font-bold mb-6 text-neutral-900">
+              <div className="inline-blockbg-white rounded-xl shadow-sm border border-outline-variant p-8">
+                <h2 className="font-headline text-2xl font-bold mb-6 text-on-surface">
                   축제 소개
                 </h2>
                 <div className="prose prose-zinc max-w-none text-neutral-500 leading-relaxed space-y-4">
@@ -157,7 +169,7 @@ function FestivalContentSection({ id }: { id: number }) {
                 </div>
                 <div className=" mt-8 grid grid-cols-2 gap-4">
                   <img
-                    className="rounded-lg h-50 w-full object-cover"
+                    className="rounded-lg h-30 w-full object-cover"
                     data-alt="crowd of people watching golden fireworks display at night near water, urban setting"
                     src={getImageUrl(item.picture)}
                   />

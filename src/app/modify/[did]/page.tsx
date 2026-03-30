@@ -1,6 +1,6 @@
 'use client'
-import { useParams } from 'next/navigation'
 import FestivalForm from '@/components/festival/FestivalForm'
+import { useParams } from 'next/navigation'
 
 export default function ModifyFestaPage() {
   const { did } = useParams()

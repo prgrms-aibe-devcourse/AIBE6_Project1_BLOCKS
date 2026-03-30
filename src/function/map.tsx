@@ -5,7 +5,7 @@ import 'leaflet/dist/leaflet.css'
 // window.kakao 인식 설정
 declare global {
   interface Window {
-    kakao: any
+    kakao?: any
   }
 }
 

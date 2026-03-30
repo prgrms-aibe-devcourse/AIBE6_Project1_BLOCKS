@@ -2,11 +2,12 @@
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
 import StarRating from '../common/StarRating'
+
 function FestaList({
   FestivalListForm,
   festivalName,
+  selectAllFesta,
 }: {
   FestivalListForm: () => void
   festivalName: {
@@ -23,6 +24,7 @@ function FestaList({
     rating: number
     picture: string
   }[]
+  selectAllFesta: (fes: any) => Promise<any>
 }) {
   const router = useRouter()
   // FestivalListForm은 전체보기 버튼 클릭 시에만 호출되도록 useEffect 제거
@@ -31,9 +33,9 @@ function FestaList({
 
     return data.publicUrl
   }
-  const FestivalList = () => {
-    FestivalListForm()
-    router.push('/')
+  const refresh = () => {
+    selectAllFesta(festivalName)
+    router.refresh()
   }
 
   return (
@@ -50,7 +52,7 @@ function FestaList({
           </div>
           <button
             className="text-on-surface-variant font-bold text-sm hover:text-primary transition-colors flex items-center gap-1"
-            onClick={() => FestivalList()}
+            onClick={() => refresh()}
           >
             전체보기
             <span

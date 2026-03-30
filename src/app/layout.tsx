@@ -5,21 +5,11 @@ import AuthProvider from '@/components/providers/AuthProvider'
 import { FestivalProvider } from '@/context/FestivalContext'
 import type { Metadata } from 'next'
 import Script from 'next/script'
+import { metadata } from './meta'
+import { ReactNode } from 'react'
+import { getServerSession } from 'next-auth/next'
 
-export const metadata: Metadata = {
-  title: {
-    default: 'FestaPlan - 나만의 축제 여행 플래너',
-    template: '%s | FestaPlan',
-  },
-  description: 'AI가 추천하는 축제 기반 최적의 여행 플랜 서비스',
-  keywords: ['축제', '여행', '플래너', 'AI', 'FestaPlan'],
-  openGraph: {
-    title: 'FestaPlan',
-    description: 'AI가 추천하는 축제 기반 최적의 여행 플랜',
-    locale: 'ko_KR',
-    type: 'website',
-  },
-}
+import Providers from '@/components/providers/Provider'
 
 /* ─────────────────────────────────────────────
    Root Layout
@@ -40,11 +30,11 @@ export default function RootLayout({
       <body className="min-h-screen flex flex-col">
         <AuthProvider>
           <Navbar />
+          <Script
+            src="//dapi.kakao.com/v2/maps/sdk.js?appkey=dc37dc09b327ae5d0055aebf692b7f78&autoload=false&libraries=services"
+            strategy="afterInteractive"
+          />
           <main className="flex-1">
-            <Script
-              src="//dapi.kakao.com/v2/maps/sdk.js?appkey=dc37dc09b327ae5d0055aebf692b7f78&autoload=false&libraries=services"
-              strategy="afterInteractive"
-            />
             <FestivalProvider>{children}</FestivalProvider>
           </main>
           <Footer />

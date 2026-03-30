@@ -1,11 +1,11 @@
 'use client'
-import { supabase } from '@/app/supabse/supabse'
+import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import MapContainer from '@/function/map'
 
-function FestaList() {
+function FestivalContentSection() {
   const [festivalName, setFestivalName] = useState<
     {
       festival_id: number
@@ -158,4 +158,4 @@ function FestaList() {
     </>
   )
 }
-export default FestaList
+export default FestivalContentSection

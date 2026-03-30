@@ -40,13 +40,13 @@ export default function RootLayout({
       <body className="min-h-screen flex flex-col">
         <AuthProvider>
           <Navbar />
-          <main className="flex-1">{children}<div className="bg-white rounded-3xl border border-[#D1D5DB] overflow-hidden shadow-sm">
+          <main className="flex-1">
             <Script
               src="//dapi.kakao.com/v2/maps/sdk.js?appkey=dc37dc09b327ae5d0055aebf692b7f78&autoload=false&libraries=services"
               strategy="afterInteractive"
             />
             <FestivalProvider>{children}</FestivalProvider>
-          </div></main>
+          </main>
           <Footer />
         </AuthProvider>
       </body>

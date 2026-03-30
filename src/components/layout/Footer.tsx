@@ -1,6 +1,21 @@
+'use client'
+
 import Link from "next/link";
+import { usePathname } from 'next/navigation';
 
 export default function Footer() {
+  const pathname = usePathname();
+
+  if (
+    !pathname ||
+    pathname.startsWith('/login') ||
+    pathname.startsWith('/signup') ||
+    pathname.startsWith('/findpwd') ||
+    pathname.startsWith('/pwdchange')
+  ) {
+    return null
+  }
+
   return (
     <footer className="w-full border-t border-[var(--color-border)] bg-[var(--color-neutral-50)] mt-16">
       <div className="mx-auto max-w-6xl px-4 py-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
@@ -19,10 +34,10 @@ export default function Footer() {
         <nav className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-[var(--color-neutral-500)]">
           {[
             { label: "서비스 소개", href: "/about" },
-            { label: "이용약관",   href: "/terms" },
+            { label: "이용약관", href: "/terms" },
             { label: "개인정보처리방침", href: "/privacy" },
-            { label: "공지사항",   href: "/notice" },
-            { label: "고객센터",   href: "/support" },
+            { label: "공지사항", href: "/notice" },
+            { label: "고객센터", href: "/support" },
           ].map(({ label, href }) => (
             <Link key={href} href={href} className="hover:text-[var(--color-primary)] transition-fast">
               {label}
@@ -32,7 +47,7 @@ export default function Footer() {
 
         {/* Copy */}
         <p className="text-xs text-[var(--color-neutral-400)]">
-          © {new Date().getFullYear()} FestaPlан. All rights reserved.
+          © {new Date().getFullYear()} FestaPlan. All rights reserved.
         </p>
       </div>
     </footer>

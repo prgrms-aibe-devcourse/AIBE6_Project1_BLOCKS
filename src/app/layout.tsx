@@ -1,9 +1,11 @@
-import type { Metadata } from 'next'
 import '@/app/globals.css'
-import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
+import Navbar from '@/components/layout/Navbar'
+import AuthProvider from '@/components/providers/AuthProvider'
+import type { Metadata } from 'next'
 import { FestivalProvider } from '@/context/FestivalContext'
 import Script from 'next/script'
+
 export const metadata: Metadata = {
   title: {
     default: 'FestaPlan - 나만의 축제 여행 플래너',
@@ -30,30 +32,23 @@ export default function RootLayout({
   return (
     <html lang="ko" data-scroll-behavior="smooth">
       <head>
-        <meta charSet="utf-8" />
-        <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-        <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
         <link
-          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap"
           rel="stylesheet"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
-          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,0"
         />
       </head>
-      <body className="text-on-surface">
-        <Navbar />
-        <main className="pt-24 pb-20 px-4 md:px-8 max-w-7xl mx-auto">
-          <div className="bg-white rounded-3xl border border-[#D1D5DB] overflow-hidden shadow-sm">
+      <body className="min-h-screen flex flex-col">
+        <AuthProvider>
+          <Navbar />
+          <main className="flex-1">{children}<div className="bg-white rounded-3xl border border-[#D1D5DB] overflow-hidden shadow-sm">
             <Script
               src="//dapi.kakao.com/v2/maps/sdk.js?appkey=dc37dc09b327ae5d0055aebf692b7f78&autoload=false&libraries=services"
               strategy="afterInteractive"
             />
             <FestivalProvider>{children}</FestivalProvider>
-          </div>
-        </main>
-        <Footer />
+          </div></main>
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   )

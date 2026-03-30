@@ -22,15 +22,8 @@ export default function ReviewSection({ festivalId }: ReviewSectionProps) {
         const { data, error } = await supabase
             .from('reviews')
             .select(`
-                id,
-                festival_id,
-                user_id,
-                contents,
-                pictures,
-                like_count,
-                rating,
-                created_at,
-                author:profiles (
+                *,
+                author:profiles!reviews_user_id_fkey (
                     user_id,
                     nickname,
                     address
@@ -56,6 +49,21 @@ export default function ReviewSection({ festivalId }: ReviewSectionProps) {
         fetchReviews()
     }, [fetchReviews])
 
+    const handleDeleteReview = async (reviewId: number) => {
+        const { error } = await supabase
+            .from('reviews')
+            .delete()
+            .eq('id', reviewId)
+
+        if (error) {
+            console.error('리뷰 삭제 오류:', error.message)
+            alert('리뷰를 삭제하는 데 실패했습니다.')
+        } else {
+            // 로컬 상태 업데이트 (목록에서 제거)
+            setReviews(prev => prev.filter(r => r.id !== reviewId))
+        }
+    }
+
     return (
         <>
             <ReviewHeader reviews={reviews} />
@@ -69,6 +77,7 @@ export default function ReviewSection({ festivalId }: ReviewSectionProps) {
                     festivalId={festivalId}
                     reviews={reviews}
                     currentUserId={user?.id ?? ''}
+                    onDeleteReview={handleDeleteReview}
                 />
             )}
         </>

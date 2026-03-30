@@ -111,6 +111,36 @@ body {
 
   .transition-base { transition: all var(--transition-base-timing); }
   .transition-fast { transition: all var(--transition-fast-timing); }
+
+    .textarea-base::placeholder { color: var(--color-neutral-400); }
+  .textarea-base:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-light);
+  }
+ 
+  .rating-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 0;
+    border-radius: 10px;
+    border: 1px solid var(--color-neutral-200);
+    background: white;
+    cursor: pointer;
+    user-select: none;
+    transition: all var(--transition-fast);
+  }
+  .rating-btn:hover {
+    border-color: var(--color-primary);
+    background-color: var(--color-primary-light);
+  }
+  .rating-btn.active {
+    border-color: var(--color-primary);
+    background-color: var(--color-primary-light);
+  }
 }
 
 /* ─────────────────────────────────────────────

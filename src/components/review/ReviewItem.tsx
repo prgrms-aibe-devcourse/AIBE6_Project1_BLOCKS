@@ -6,12 +6,19 @@ import { formatDate } from '@/utils/date';
 interface ReviewItemProps {
     review: Review;
     currentUserId: string;
+    onDeleteReview?: (reviewId: number) => void;
 }
 
-function ReviewItem({ review, currentUserId }: ReviewItemProps) {
-    const isOwner = currentUserId === review.author?.user_id;
+function ReviewItem({ review, currentUserId, onDeleteReview }: ReviewItemProps) {
+    const isOwner = currentUserId === review.user_id; // ✅ user_id 필드 직접 비교
     const nickname = review.author?.nickname ?? '알 수 없음';
     const initial = nickname[0] ?? '?';
+
+    const handleDelete = () => {
+        if (window.confirm("정말 이 리뷰를 삭제하시겠습니까?")) {
+            onDeleteReview?.(review.id);
+        }
+    };
 
     return (
         <div className="py-5 border-b border-[var(--color-neutral-100)] last:border-none">
@@ -45,6 +52,16 @@ function ReviewItem({ review, currentUserId }: ReviewItemProps) {
                         </div>
                     </div>
                 </div>
+
+                {/* 삭제 버튼 (작성자에게만 표시) */}
+                {isOwner && (
+                    <button
+                        onClick={handleDelete}
+                        className="text-[11px] text-[var(--color-neutral-400)] hover:text-red-500 transition-colors px-2 py-1 rounded-md hover:bg-red-50"
+                    >
+                        삭제
+                    </button>
+                )}
             </div>
 
             {/* 리뷰 이미지 */}

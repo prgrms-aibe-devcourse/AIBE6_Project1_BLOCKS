@@ -53,10 +53,10 @@ const buttonVariants = cva(
         ].join(" "),
       },
       size: {
-        sm:  "text-xs px-3 py-1.5 h-8",
-        md:  "text-sm px-4 py-2 h-9",
-        lg:  "text-sm px-6 py-2.5 h-10",
-        xl:  "text-base px-8 py-3 h-12",
+        sm: "text-xs px-3 py-1.5 h-8",
+        md: "text-sm px-4 py-2 h-9",
+        lg: "text-sm px-6 py-2.5 h-10",
+        xl: "text-base px-8 py-3 h-12",
         icon: "p-2 h-9 w-9",
       },
       fullWidth: {
@@ -75,7 +75,7 @@ const buttonVariants = cva(
    ───────────────────────────────────────────── */
 export interface ButtonProps
   extends ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
+  VariantProps<typeof buttonVariants> {
   loading?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;

@@ -79,6 +79,7 @@ export const DaySchedule = ({
                   </div>
                   <div className="flex gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity shrink-0">
                     <button
+                      type="button"
                       onClick={() => handleOpenEdit(plan)}
                       className="p-2 hover:bg-neutral-100 rounded-lg text-neutral-400 hover:text-primary transition-colors cursor-pointer"
                     >
@@ -87,6 +88,7 @@ export const DaySchedule = ({
                       </span>
                     </button>
                     <button
+                      type="button"
                       onClick={() => handleDelete(plan.plan_id)}
                       className="p-2 hover:bg-red-50 rounded-lg text-red-500 transition-colors cursor-pointer"
                     >
@@ -109,6 +111,7 @@ export const DaySchedule = ({
           ))}
 
           <button
+            type="button"
             onClick={() => handleOpenAdd(dayNum)}
             className="flex items-center gap-2 px-6 py-4 rounded-xl border-2 border-dashed border-primary/30 text-primary font-bold w-full justify-center hover:bg-primary/5 transition-colors group cursor-pointer"
           >

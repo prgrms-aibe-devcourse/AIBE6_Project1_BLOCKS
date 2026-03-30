@@ -136,7 +136,10 @@ JSON 응답 형식:
     // Extract and format time safely to avoid Postgres insert crashes
     const parseTimeSafe = (timeStr: any) => {
       const s = String(timeStr || '12:00').trim()
-      let t = s.replace(/[^0-9:]/g, ':').replace(/:+/g, ':').replace(/^:|:$/g, '')
+      let t = s
+        .replace(/[^0-9:]/g, ':')
+        .replace(/:+/g, ':')
+        .replace(/^:|:$/g, '')
       const parts = t.split(':')
       let h = parseInt(parts[0] || '12', 10)
       let m = parseInt(parts[1] || '0', 10)

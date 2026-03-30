@@ -89,12 +89,14 @@ export const PlanModal = ({
         </div>
         <div className="flex gap-2 mt-6">
           <button
+            type="button"
             onClick={onClose}
             className="flex-1 py-3 bg-neutral-100 font-bold rounded-xl text-neutral-500 hover:bg-neutral-200 cursor-pointer"
           >
             취소
           </button>
           <button
+            type="button"
             onClick={onSave}
             className="flex-1 py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:bg-primary-dark cursor-pointer"
           >

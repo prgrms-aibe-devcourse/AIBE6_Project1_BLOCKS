@@ -125,7 +125,12 @@ export function useResult() {
 
   const handleDelete = async (planId: number) => {
     if (!confirm('정말 삭제하시겠습니까?')) return
-    await supabase.from('plans').delete().eq('plan_id', planId)
+    const { error } = await supabase.from('plans').delete().eq('plan_id', planId)
+    if (error) {
+      console.error('Delete error:', error)
+      alert(`삭제 중 오류가 발생했습니다: ${error.message}`)
+      return
+    }
     fetchData()
   }
 
@@ -164,7 +169,7 @@ export function useResult() {
     const formattedEnd = `${emd_time}:00+09:00`
 
     if (modalMode === 'add') {
-      await supabase.from('plans').insert({
+      const { error } = await supabase.from('plans').insert({
         planner_id: plannerId,
         day,
         start_time: formattedStart,
@@ -172,8 +177,13 @@ export function useResult() {
         place,
         contents,
       })
+      if (error) {
+        console.error('Insert error:', error)
+        alert(`추가 중 오류가 발생했습니다: ${error.message}`)
+        return
+      }
     } else {
-      await supabase
+      const { error } = await supabase
         .from('plans')
         .update({
           day,
@@ -183,6 +193,11 @@ export function useResult() {
           contents,
         })
         .eq('plan_id', editingPlan.plan_id)
+      if (error) {
+        console.error('Update error:', error)
+        alert(`수정 중 오류가 발생했습니다: ${error.message}`)
+        return
+      }
     }
 
     setIsModalOpen(false)

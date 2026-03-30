@@ -23,12 +23,7 @@ export default function ReviewSection({ festivalId }: ReviewSectionProps) {
             .from('reviews')
             .select(`
                 *,
-                author:profiles!reviews_user_id_fkey (
-                    user_id,
-                    nickname,
-                    picture,
-                    address
-                )
+                author:profiles!reviews_user_id_fkey (user_id, nickname, picture, address)
             `)
             .eq('festival_id', festivalId)
             .order('created_at', { ascending: false })

@@ -2,8 +2,8 @@ import '@/app/globals.css'
 import Footer from '@/components/layout/Footer'
 import Navbar from '@/components/layout/Navbar'
 import AuthProvider from '@/components/providers/AuthProvider'
-import type { Metadata } from 'next'
 import { FestivalProvider } from '@/context/FestivalContext'
+import type { Metadata } from 'next'
 import Script from 'next/script'
 
 export const metadata: Metadata = {

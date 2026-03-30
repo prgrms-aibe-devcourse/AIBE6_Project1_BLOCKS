@@ -132,16 +132,16 @@ function FestivalContentSection({ id }: { id: number }) {
         {festivalName.map((item) => (
           <ul key={item.festival_id}>
             <div className="space-y-8">
-              <div className="bg-white rounded-xl shadow-sm border border-outline-variant p-8">
+              <div className="inline-block bg-white rounded-xl shadow-sm border border-outline-variant p-8">
                 <h2 className="font-headline text-2xl font-bold mb-6 text-on-surface">
                   축제 소개
                 </h2>
                 <div className="prose prose-zinc max-w-none text-on-surface-variant leading-relaxed space-y-4">
                   <p>{item.contents}</p>
                 </div>
-                <div className="inline-block mt-8 grid grid-cols-2 gap-4">
+                <div className=" mt-8 grid grid-cols-2 gap-4">
                   <img
-                    className="rounded-lg h-64 w-full object-cover"
+                    className="rounded-lg h-50 w-full object-cover"
                     data-alt="crowd of people watching golden fireworks display at night near water, urban setting"
                     src={getImageUrl(item.picture)}
                   />

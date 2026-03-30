@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation'
 
 export default function FestivalDetailPage() {
   const { id } = useParams()
-  const festivalId = Number(params.id)
+  const festivalId = Number(id)
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 bg-surface">
       {/* 축제 상세 내용 영역 */}

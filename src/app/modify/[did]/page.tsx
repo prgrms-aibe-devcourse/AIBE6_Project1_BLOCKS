@@ -135,14 +135,11 @@ function modifyFesta() {
                 name="items"
                 className="border border-black"
               >
-                <option value="음악">음악</option>
-                <option value="꽃">꽃</option>
-                <option value="동물">동물</option>
-                <option value="음식">음식</option>
-                <option value="문화">문화</option>
-                <option value="레저">레저</option>
-                <option value="과학">과학</option>
-                <option value="종교">종교</option>
+                <option value="문화">문화/예술</option>
+                <option value="예술, 음식, 음악">예술, 음식, 음악</option>
+                <option value="역사, 자연">역사, 자연</option>
+                <option value="공연, 전통">공연, 전통</option>
+                <option value="야외, 스포츠">야외, 스포츠</option>
               </select>
               <h2 className="text-3xl font-bold text-on-surface">축제 지역</h2>
               <select

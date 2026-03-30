@@ -3,6 +3,8 @@ import Footer from '@/components/layout/Footer'
 import Navbar from '@/components/layout/Navbar'
 import AuthProvider from '@/components/providers/AuthProvider'
 import type { Metadata } from 'next'
+import { FestivalProvider } from '@/context/FestivalContext'
+import Script from 'next/script'
 
 export const metadata: Metadata = {
   title: {
@@ -38,7 +40,13 @@ export default function RootLayout({
       <body className="min-h-screen flex flex-col">
         <AuthProvider>
           <Navbar />
-          <main className="flex-1">{children}</main>
+          <main className="flex-1">
+            <Script
+              src="//dapi.kakao.com/v2/maps/sdk.js?appkey=dc37dc09b327ae5d0055aebf692b7f78&autoload=false&libraries=services"
+              strategy="afterInteractive"
+            />
+            <FestivalProvider>{children}</FestivalProvider>
+          </main>
           <Footer />
         </AuthProvider>
       </body>

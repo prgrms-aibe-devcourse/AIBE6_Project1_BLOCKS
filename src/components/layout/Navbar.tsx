@@ -100,9 +100,9 @@ export default function Navbar() {
                   size: 'icon',
                 })}
               >
-                {profile?.image ? (
+                {profile?.picture ? (
                   <Image
-                    src={profile.image}
+                    src={profile.picture}
                     alt="Profile"
                     width={24}
                     height={24}

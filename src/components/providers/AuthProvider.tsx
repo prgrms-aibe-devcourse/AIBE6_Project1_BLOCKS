@@ -44,7 +44,7 @@ export default function AuthProvider({
         .eq('user_id', userId)
         .single()
       if (!error && data) {
-        setProfile(data)
+        setProfile({ ...data, email: authUser?.email || data.email || '' })
       } else if (error?.code === 'PGRST116' && authUser) {
         // 최초 소셜 로그인 등 프로필이 없는 경우 자동 생성 (Race condition 방지)
         // 이메일 가입자는 signup 페이지에서 수동으로 insert 하므로 제외
@@ -59,7 +59,7 @@ export default function AuthProvider({
               authUser.user_metadata.nickname ||
               'KakaoUser'
           }
-          
+
           // 카카오 로그인일 때만 닉네임 중복 방지용 임의의 숫자 부여
           const defaultNickname = `${baseName}_${Math.floor(Math.random() * 10000)}`
 
@@ -250,7 +250,7 @@ export default function AuthProvider({
   // 이로써 카카오 로그인창에서 뒤로가기 시 흔히 발생하는 브라우저 BFCache 무한 펜딩 상태를 원천 차단합니다.
   const isProtectedRoute = pathname
     ? AUTH_REQUIRED_ROUTES.some((route) => pathname.startsWith(route)) ||
-      pathname.startsWith('/pwdchange')
+    pathname.startsWith('/pwdchange')
     : false
 
   if (loading && isProtectedRoute) {

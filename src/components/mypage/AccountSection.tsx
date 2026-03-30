@@ -12,6 +12,7 @@ interface AccountSectionProps {
 
 function AccountSection({ profile }: AccountSectionProps) {
     const [nickname, setNickname] = useState(profile.nickname)
+    const [email, setEmail] = useState(profile.email)
     const [pendingFile, setPendingFile] = useState<File | null>(null) //선택됐지만 아직 업로드 안 된 파일
     const [preview, setPreview] = useState<string | null>(null) //로컬 미리보기 URL
     const [picture, setPicture] = useState(profile.picture)
@@ -21,7 +22,8 @@ function AccountSection({ profile }: AccountSectionProps) {
     useEffect(() => {
         if (profile.nickname) setNickname(profile.nickname)
         if (profile.picture) setPicture(profile.picture)
-    }, [profile.nickname, profile.picture])
+        setEmail(profile.email)
+    }, [profile.nickname, profile.picture, profile.email])
 
     // 로컬 ObjectURL 메모리 누수 방지
     useEffect(() => {

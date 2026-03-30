@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import StarRating from '../common/StarRating'
+import { useRouter } from 'next/navigation'
 function FestaList({
   FestivalListForm,
   festivalName,
@@ -23,6 +24,7 @@ function FestaList({
     picture: string
   }[]
 }) {
+  const router = useRouter()
   useEffect(() => {
     FestivalListForm()
   }, [])
@@ -30,6 +32,10 @@ function FestaList({
     const { data } = supabase.storage.from('festival').getPublicUrl(path)
 
     return data.publicUrl
+  }
+  const FestivalList = () => {
+    FestivalListForm()
+    router.push('/')
   }
 
   return (
@@ -44,7 +50,10 @@ function FestaList({
               지금 가장 뜨거운 축제
             </h2>
           </div>
-          <button className="text-on-surface-variant font-bold text-sm hover:text-primary transition-colors flex items-center gap-1">
+          <button
+            className="text-on-surface-variant font-bold text-sm hover:text-primary transition-colors flex items-center gap-1"
+            onClick={() => FestivalList()}
+          >
             전체보기
             <span
               className="material-symbols-outlined text-sm"

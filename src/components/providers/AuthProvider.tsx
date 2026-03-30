@@ -46,49 +46,49 @@ export default function AuthProvider({
       if (!error && data) {
         setProfile({ ...data, email: authUser?.email || data.email || '' })
       } else if (error?.code === 'PGRST116' && authUser) {
-        // 최초 소셜 로그인 등 프로필이 없는 경우 자동 생성
-        let baseName = 'User'
-        if (authUser.user_metadata) {
-          baseName =
-            authUser.user_metadata.name ||
-            authUser.user_metadata.full_name ||
-            authUser.user_metadata.nickname ||
-            (authUser.email ? authUser.email.split('@')[0] : 'User')
-        }
-        
-        // 닉네임 중복을 피하기 위해 임의의 숫자 부여
-        const defaultNickname = `${baseName}_${Math.floor(Math.random() * 10000)}`
+        // 최초 소셜 로그인 등 프로필이 없는 경우 자동 생성 (Race condition 방지)
+        // 이메일 가입자는 signup 페이지에서 수동으로 insert 하므로 제외
+        const isKakao = authUser.app_metadata?.provider === 'kakao'
 
-        const { data: newProfile, error: insertError } = await supabase
-          .from('profiles')
-          .insert({
-            user_id: userId,
-            nickname: defaultNickname,
-          })
-          .select()
-          .single()
+        if (isKakao) {
+          let baseName = 'User'
+          if (authUser.user_metadata) {
+            baseName =
+              authUser.user_metadata.name ||
+              authUser.user_metadata.full_name ||
+              authUser.user_metadata.nickname ||
+              'KakaoUser'
+          }
 
-        if (!insertError && newProfile) {
-          setProfile({ ...newProfile, email: authUser?.email || newProfile.email || '' })
-        } else if (insertError?.code === '23505') {
-          // 동시성 문제로 이미 다른 요청에서 프로필이 생성된 경우 재조회
-          const { data: retryData } = await supabase
+          // 카카오 로그인일 때만 닉네임 중복 방지용 임의의 숫자 부여
+          const defaultNickname = `${baseName}_${Math.floor(Math.random() * 10000)}`
+
+          const { data: newProfile, error: insertError } = await supabase
             .from('profiles')
-            .select('*')
-            .eq('user_id', userId)
+            .insert({
+              user_id: userId,
+              nickname: defaultNickname,
+            })
+            .select()
             .single()
-          if (retryData) {
-            setProfile({ ...retryData, email: authUser?.email || retryData.email || '' })
+
+          if (!insertError && newProfile) {
+            setProfile(newProfile)
+          } else if (insertError?.code === '23505') {
+            const { data: retryData } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('user_id', userId)
+              .single()
+            if (retryData) {
+              setProfile(retryData)
+            }
+          } else {
+            console.error('Failed to create kakao profile:', insertError)
+            setProfile(null)
           }
         } else {
-          // PostgrestError는 console.error에서 {}로 찍힘 → 상세 로깅
-          console.error('Failed to create auto profile:', {
-            message: insertError?.message,
-            code: insertError?.code,
-            details: insertError?.details,
-            hint: insertError?.hint,
-            full: JSON.stringify(insertError),
-          })
+          // 이메일 가입 중 등에서는 아무것도 안함 (Signup 폼에서 직접 insert)
           setProfile(null)
         }
       } else {
@@ -250,7 +250,7 @@ export default function AuthProvider({
   // 이로써 카카오 로그인창에서 뒤로가기 시 흔히 발생하는 브라우저 BFCache 무한 펜딩 상태를 원천 차단합니다.
   const isProtectedRoute = pathname
     ? AUTH_REQUIRED_ROUTES.some((route) => pathname.startsWith(route)) ||
-      pathname.startsWith('/pwdchange')
+    pathname.startsWith('/pwdchange')
     : false
 
   if (loading && isProtectedRoute) {

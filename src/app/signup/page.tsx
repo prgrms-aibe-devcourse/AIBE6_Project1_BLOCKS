@@ -98,19 +98,31 @@ export default function SignUp() {
           ? `${formData.address} ${formData.detailAddress}`
           : formData.address
 
-        // 2. Insert into public.profiles
-        const { error: profileError } = await supabase.from('profiles').insert({
-          user_id: authData.user.id,
-          nickname: formData.nickname,
-          address: finalAddress,
+        // 2. Insert into public.profiles via server API (admin client bypasses RLS)
+        // 이메일 확인 대기 상태에서는 클라이언트 세션이 없어 RLS가 막으므로 서버에서 처리
+        const res = await fetch('/api/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: authData.user.id,
+            nickname: formData.nickname,
+            address: finalAddress,
+          }),
         })
 
-        if (profileError) {
-          console.error('Profile Insert Error:', profileError)
-          throw new Error('프로필 정보 저장 중 오류가 발생했습니다.')
+        if (!res.ok) {
+          let profileError = '서버 통신 중 오류가 발생했습니다.'
+          try {
+            const errData = await res.json()
+            if (errData.error) profileError = errData.error
+          } catch(e) {
+            console.error('Non-JSON response received from /api/signup')
+            profileError = 'API 서버가 응답하지 않습니다 (.env 환경변수 설정 누락 의심).'
+          }
+          throw new Error(profileError)
         }
 
-        alert('회원가입이 완료되었습니다!')
+        alert('회원가입이 완료되었습니다!\n이메일 인증 후 로그인해주세요.')
         router.push('/login')
       }
     } catch (error: any) {

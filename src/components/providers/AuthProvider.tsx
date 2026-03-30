@@ -169,7 +169,7 @@ export default function AuthProvider({
       }
 
       // 가장 확실하게 상태를 초기화하며 화면 이동
-      window.location.href = '/login'
+      window.location.href = '/'
     }
   }
 

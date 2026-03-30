@@ -2,7 +2,8 @@
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
-
+import StarRating from '../common/StarRating'
+import { useRouter } from 'next/navigation'
 function FestaList({
   FestivalListForm,
   festivalName,
@@ -23,6 +24,7 @@ function FestaList({
     picture: string
   }[]
 }) {
+  const router = useRouter()
   useEffect(() => {
     FestivalListForm()
   }, [])
@@ -30,6 +32,10 @@ function FestaList({
     const { data } = supabase.storage.from('festival').getPublicUrl(path)
 
     return data.publicUrl
+  }
+  const FestivalList = () => {
+    FestivalListForm()
+    router.push('/')
   }
 
   return (
@@ -44,7 +50,10 @@ function FestaList({
               지금 가장 뜨거운 축제
             </h2>
           </div>
-          <button className="text-on-surface-variant font-bold text-sm hover:text-primary transition-colors flex items-center gap-1">
+          <button
+            className="text-on-surface-variant font-bold text-sm hover:text-primary transition-colors flex items-center gap-1"
+            onClick={() => FestivalList()}
+          >
             전체보기
             <span
               className="material-symbols-outlined text-sm"
@@ -59,15 +68,13 @@ function FestaList({
             <ul key={item.festival_id}>
               <div className="group cursor-pointer">
                 <div className="relative aspect-[4/5] rounded-2xl overflow-hidden mb-4 shadow-sm group-hover:shadow-xl transition-all duration-300">
+                  <StarRating rating={item.rating} size="md" showValue />
                   <input type="checkbox" />
                   <img
                     src={getImageUrl(item.picture)}
                     alt="pic1"
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
-                  <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold text-primary tracking-widest">
-                    D-12
-                  </div>
                 </div>
                 <h3 className="text-xl font-bold text-on-surface mb-2">
                   {item.title}

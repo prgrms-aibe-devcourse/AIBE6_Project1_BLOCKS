@@ -3,6 +3,7 @@
 import KakaoPlacePicker from '@/components/planner/KakaoPlacePicker'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useRef, useState } from 'react'
+import { useAuth } from '@/components/providers/AuthProvider'
 
 interface FestivalCardProps {
   festival_id: number
@@ -31,7 +32,7 @@ const FestivalCard = ({
 }: FestivalCardProps) => {
   const start = new Date(start_date)
   const end = new Date(end_date)
-  const options: string[] = []
+  const options: { label: string; value: string }[] = []
 
   const daysOfWeek = ['일', '월', '화', '수', '목', '금', '토']
 
@@ -40,13 +41,18 @@ const FestivalCard = ({
     const month = String(currentDate.getMonth() + 1).padStart(2, '0')
     const date = String(currentDate.getDate()).padStart(2, '0')
     const day = daysOfWeek[currentDate.getDay()]
-    options.push(`${month}.${date} (${day})`)
+    const yyyy = currentDate.getFullYear()
+    
+    options.push({
+      label: `${month}.${date} (${day})`,
+      value: `${yyyy}-${month}-${date}`
+    })
     currentDate.setDate(currentDate.getDate() + 1)
   }
 
   const dateRange = `${start_date.split('-').slice(1).join('.')} - ${end_date.split('-').slice(1).join('.')}`
 
-  const [selectedDate, setSelectedDate] = useState(options[0])
+  const [selectedDate, setSelectedDate] = useState(options[0]?.value || '')
 
   return (
     <article
@@ -108,8 +114,8 @@ const FestivalCard = ({
                 }
               }}
             >
-              {options.map((opt: string, idx: number) => (
-                <option key={idx}>{opt}</option>
+              {options.map((opt: any, idx: number) => (
+                <option key={idx} value={opt.value}>{opt.label}</option>
               ))}
             </select>
             <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-lg">
@@ -306,7 +312,7 @@ const Calendar = ({
         {prevMonthDays.map((d, i) => (
           <div
             key={`prev-${i}`}
-            className="h-10 flex items-center justify-center text-on-surface-variant/30 text-sm"
+            className="h-8 flex items-center justify-center text-on-surface-variant/30 text-xs"
           >
             {d}
           </div>
@@ -320,7 +326,7 @@ const Calendar = ({
             <div
               key={day}
               onClick={() => handleDayClick(day)}
-              className={`h-10 flex items-center justify-center text-sm cursor-pointer relative transition-all select-none rounded-full
+              className={`h-8 flex items-center justify-center text-sm cursor-pointer relative transition-all select-none rounded-full
                   ${
                     primary
                       ? 'bg-primary text-white z-10 shadow-lg shadow-[#f26565]/30 font-bold'
@@ -344,6 +350,7 @@ const Calendar = ({
 function Step2Content() {
   const searchParams = useSearchParams()
   const router = useRouter()
+  const { user } = useAuth()
 
   const [festivals, setFestivals] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -372,7 +379,6 @@ function Step2Content() {
         const data = await res.json()
         if (data.festivals && data.festivals.length > 0) {
           setFestivals(data.festivals)
-          setSelectedFestivalId(data.festivals[0].festival_id)
         }
       } catch (err) {
         console.error(err)
@@ -384,12 +390,20 @@ function Step2Content() {
   }, [searchParams])
 
   const getInitialOption = (festival: any) => {
-    if (!festival) return ''
-    const daysOfWeek = ['일', '월', '화', '수', '목', '금', '토']
+    if (!festival || !festival.start_date) return ''
     const start = new Date(festival.start_date)
     const month = String(start.getMonth() + 1).padStart(2, '0')
     const date = String(start.getDate()).padStart(2, '0')
-    const day = daysOfWeek[start.getDay()]
+    return `${start.getFullYear()}-${month}-${date}`
+  }
+
+  const getDisplayDate = (dateValue: string) => {
+    if (!dateValue || dateValue.split('-').length !== 3) return dateValue
+    const d = new Date(dateValue)
+    const daysOfWeek = ['일', '월', '화', '수', '목', '금', '토']
+    const month = String(d.getMonth() + 1).padStart(2, '0')
+    const date = String(d.getDate()).padStart(2, '0')
+    const day = daysOfWeek[d.getDay()]
     return `${month}.${date} (${day})`
   }
 
@@ -409,16 +423,30 @@ function Step2Content() {
   }
 
   const selectedFestival =
-    festivals.find((f) => f.festival_id === selectedFestivalId) || festivals[0]
+    festivals.find((f) => f.festival_id === selectedFestivalId) || null
 
   const handleGenerate = async () => {
     if (!address) return alert('출발지를 입력해주세요.')
     if (!selectedRange.start) return alert('여행 날짜를 선택해주세요.')
     if (!selectedFestival) return alert('축제를 선택해주세요.')
 
+    const visitDateStr = visitDates[selectedFestivalId || -1] || getInitialOption(selectedFestival)
+    const visitDate = new Date(visitDateStr)
+    visitDate.setHours(0, 0, 0, 0)
+    
+    const rangeStart = new Date(selectedRange.start)
+    rangeStart.setHours(0, 0, 0, 0)
+    
+    const rangeEnd = selectedRange.end ? new Date(selectedRange.end) : new Date(rangeStart)
+    rangeEnd.setHours(0, 0, 0, 0)
+
+    if (visitDate < rangeStart || visitDate > rangeEnd) {
+      return alert('축제 방문 예정일이 설정하신 여행 기간 내에 포함되어야 합니다.')
+    }
+
     setIsGenerating(true)
 
-    const startDate = selectedRange.start?.toISOString().split('T')[0]
+    const startDate = selectedRange.start.toISOString().split('T')[0]
     const endDate = selectedRange.end
       ? selectedRange.end.toISOString().split('T')[0]
       : startDate
@@ -427,11 +455,11 @@ function Step2Content() {
       address,
       startDate,
       endDate,
+      userId: user?.id,
       festival: {
+        id: selectedFestivalId,
         title: selectedFestival.title,
-        date:
-          visitDates[selectedFestivalId || -1] ||
-          getInitialOption(selectedFestival),
+        date: getDisplayDate(visitDateStr),
       },
       preferences: {
         category: searchParams.get('category'),
@@ -575,9 +603,9 @@ function Step2Content() {
             </section>
 
             <section ref={formRef} className="order-1 lg:order-2 lg:col-span-5">
-              <div className="sticky top-28 space-y-8 max-h-[calc(100vh-8rem)] overflow-y-auto pr-1">
-                <div className="bg-white border border-[#D1D1D1] rounded-2xl p-6">
-                  <h2 className="text-xl font-bold flex items-center mb-4">
+              <div className="sticky top-24 space-y-4 lg:max-h-[calc(100vh-6rem)] overflow-y-auto [&::-webkit-scrollbar]:hidden pr-1">
+                <div className="bg-white border border-[#D1D1D1] rounded-2xl p-5">
+                  <h2 className="text-xl font-bold flex items-center mb-3">
                     <span className="material-symbols-outlined mr-2 text-primary">
                       location_on
                     </span>
@@ -589,7 +617,7 @@ function Step2Content() {
                   />
                 </div>
 
-                <div className="bg-white border border-[#D1D1D1] rounded-2xl p-8 space-y-8">
+                <div className="bg-white border border-[#D1D1D1] rounded-2xl p-6 space-y-6">
                   <div className="flex items-center justify-between">
                     <h2 className="text-xl font-bold flex items-center">
                       <span className="mr-2 text-primary">
@@ -600,37 +628,37 @@ function Step2Content() {
                       날짜 설정
                     </h2>
                     <span className="text-[10px] font-bold text-primary bg-primary-light px-2 py-1 rounded-full uppercase tracking-tighter italic">
-                      {selectedFestival.title} 기간
+                      {selectedFestival?.title || '축제'} 기간
                     </span>
                   </div>
 
                   <Calendar
                     selectedRange={selectedRange}
                     onRangeChange={setSelectedRange}
-                    festivalRange={{
+                    festivalRange={selectedFestival ? {
                       start_date: selectedFestival.start_date,
                       end_date: selectedFestival.end_date,
-                    }}
+                    } : undefined}
                     currentDate={currentDate}
                     setCurrentDate={setCurrentDate}
                   />
 
                   <div className="pt-6 border-t border-[#D1D1D1]">
-                    <div className="mb-6">
+                    <div className="mb-4">
                       <p className="text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-widest mb-1">
                         선택한 기간
                       </p>
                       <p className="text-xl font-bold">{getDurationText()}</p>
                       <p className="text-sm font-medium text-primary mt-2">
                         방문 예정일:{' '}
-                        {visitDates[selectedFestivalId || -1] ||
-                          getInitialOption(selectedFestival)}
+                        {getDisplayDate(visitDates[selectedFestivalId || -1] ||
+                          getInitialOption(selectedFestival))}
                       </p>
                     </div>
                     <button
                       onClick={handleGenerate}
-                      disabled={isGenerating}
-                      className="w-full py-5 rounded-full bg-primary hover:bg-[#ff6161] disabled:opacity-70 disabled:hover:bg-primary cursor-pointer text-white font-black text-lg transition-all shadow-xl shadow-[#f26565]/20 active:scale-95 flex items-center justify-center group"
+                      disabled={isGenerating || !selectedFestival}
+                      className="w-full py-4 rounded-full bg-primary hover:bg-[#ff6161] disabled:bg-neutral-300 disabled:text-neutral-500 disabled:shadow-none disabled:cursor-not-allowed disabled:transform-none cursor-pointer text-white font-black text-base transition-all shadow-xl shadow-[#f26565]/20 active:scale-95 flex items-center justify-center group"
                     >
                       <span
                         className="material-symbols-outlined mr-2 group-hover:rotate-12 transition-transform"

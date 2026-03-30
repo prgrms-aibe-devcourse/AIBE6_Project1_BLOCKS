@@ -18,18 +18,14 @@ export async function GET(request: Request) {
     let query = supabase
       .from('festivals')
       .select('*')
-      .order('rating', { ascending: false })
+      .order('rating', { ascending: false, nullsFirst: false })
 
     const words = categoryQuery.split('/').filter(Boolean)
 
     if (words.length > 0) {
       // 슬래시로 구분된 단어 중 하나라도 option1에 포함되면 가져오기 (OR 조건)
       const orConditions = words
-        .flatMap((word) => [
-          `option1.ilike.%${word}%`,
-          `title.ilike.%${word}%`,
-          `contents.ilike.%${word}%`,
-        ])
+        .map((word) => `option1.ilike.%${word}%`)
         .join(',')
 
       query = query.or(orConditions)

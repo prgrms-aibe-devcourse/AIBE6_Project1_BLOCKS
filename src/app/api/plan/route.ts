@@ -12,7 +12,7 @@ const supabase = createClient(supabaseUrl, supabaseKey)
 export async function POST(req: Request) {
   try {
     const body = await req.json()
-    const { address, startDate, endDate, festival, preferences } = body
+    const { address, startDate, endDate, festival, preferences, userId } = body
 
     let generated: any = null
 
@@ -33,10 +33,10 @@ JSON 응답 형식:
   "distance": "예상 총 이동 거리 (예: 120km 공간 이동 거리만 km 단위로 적으세요.)",
   "confidence": "98% (이 플랜이 얼마나 완벽한지 100점 만점으로 표현하세요)",
   "plans": [
-    { "day": 1, "start_time": "10:00", "end_time": "12:00", "place": "장소명", "contents": "일정 상세 내용" }
+    { "day": 1, "start_time": "10:00", "end_time": "12:00", "place": "장소명", "contents": "일정 상세 내용 (반드시 start_time과 end_time은 24시간제 HH:MM 형식 5글자만 사용하세요.)" }
   ]
 }
-반드시 순수 JSON 텍스트만 출력하세요. 마크다운(\`\`\`json 등)은 제외하세요.
+반드시 순수 JSON 텍스트만 출력하세요. 마크다운(\`\`\`json 등)이나 한국어 시간 표현(오전/오후/시/분)은 오류를 일으키므로 절대 사용하지 마세요.
 `
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
@@ -120,7 +120,8 @@ JSON 응답 형식:
         title: generated.title,
         start_date: startDate,
         end_date: endDate,
-        user_id: null, // auth.user() integration goes here when ready
+        user_id: userId || null, // from request body
+        festival_id: festival.id || null,
         distance: generated.distance,
         confidence: generated.confidence,
       })
@@ -132,14 +133,24 @@ JSON 응답 형식:
     const plannerId = plannerData.planner_id
 
     // 4. Insert into DB "plans"
-    // We append a basic timestamp syntax for postgres `time with time zone` (e.g. "10:00:00+09")
-    const formattedPlans = generated.plans.map((p: any) => ({
+    // Extract and format time safely to avoid Postgres insert crashes
+    const parseTimeSafe = (timeStr: any) => {
+      const s = String(timeStr || '12:00').trim()
+      let t = s.replace(/[^0-9:]/g, ':').replace(/:+/g, ':').replace(/^:|:$/g, '')
+      const parts = t.split(':')
+      let h = parseInt(parts[0] || '12', 10)
+      let m = parseInt(parts[1] || '0', 10)
+      if (s.includes('오후') && h < 12) h += 12
+      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00+09:00`
+    }
+
+    const formattedPlans = (generated.plans || []).map((p: any) => ({
       planner_id: plannerId,
-      day: p.day,
-      start_time: `${p.start_time}:00+09:00`,
-      emd_time: `${p.end_time}:00+09:00`, // Using db schema typo name `emd_time`
-      place: p.place,
-      contents: p.contents,
+      day: p.day || 1,
+      start_time: parseTimeSafe(p.start_time),
+      emd_time: parseTimeSafe(p.end_time), // Using db schema typo name `emd_time`
+      place: String(p.place || '').substring(0, 100),
+      contents: String(p.contents || ''),
     }))
 
     const { error: plansError } = await supabase

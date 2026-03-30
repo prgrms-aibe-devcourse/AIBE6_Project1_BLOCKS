@@ -107,7 +107,7 @@ export default function Step1() {
                     <button
                       key={item.id}
                       onClick={() => setStyle(item.id)}
-                      className={`flex-1 py-4 px-6 rounded-2xl font-bold transition-all active:scale-95 
+                      className={`flex-1 py-4 px-6 rounded-2xl font-bold transition-all active:scale-95 hover:cursor-pointer
                         ${
                           isSelected
                             ? 'bg-primary text-white shadow-lg shadow-[#f26565]/20'
@@ -131,7 +131,7 @@ export default function Step1() {
                     <button
                       key={item.id}
                       onClick={() => setCompanion(item.id)}
-                      className={`flex-1 py-3 px-6 rounded-full font-bold transition-all active:scale-95
+                      className={`flex-1 py-3 px-6 rounded-full font-bold transition-all active:scale-95 hover:cursor-pointer
                         ${
                           isSelected
                             ? 'bg-primary text-white shadow-lg shadow-[#f26565]/20'
@@ -147,7 +147,7 @@ export default function Step1() {
             <div className="pt-6">
               <button
                 onClick={handleNext}
-                className="w-full py-5 bg-primary text-white text-lg font-extrabold rounded-2xl shadow-xl shadow-[#f26565]/30 hover:bg-[#d94f4f] transition-all active:scale-[0.98] flex items-center justify-center gap-3"
+                className="w-full py-5 bg-primary text-white text-lg font-extrabold rounded-2xl shadow-xl shadow-[#f26565]/30 hover:bg-[#d94f4f] transition-all active:scale-[0.98] flex items-center justify-center gap-3 hover:cursor-pointer"
               >
                 <span>축제 추천받기</span>
                 <span className="material-symbols-outlined">auto_awesome</span>

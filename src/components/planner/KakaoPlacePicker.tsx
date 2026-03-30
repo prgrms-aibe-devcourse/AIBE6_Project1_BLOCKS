@@ -228,7 +228,7 @@ export default function KakaoPlacePicker({
           {/* 지도 영역 */}
           <div
             ref={mapRef}
-            className="w-full h-48 rounded-xl overflow-hidden border border-[#D1D1D1]"
+            className="w-full h-40 rounded-xl overflow-hidden border border-[#D1D1D1]"
           />
         </div>
       )}

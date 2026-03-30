@@ -1,16 +1,22 @@
 'use client'
 
 import { supabase } from '@/lib/supabase'
-import { useSearchParams } from 'next/navigation'
-import { Suspense, useEffect, useState } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
+import { useAuth } from '@/components/providers/AuthProvider'
+import { Suspense, useEffect, useState, useRef } from 'react'
 
 function ResultContent() {
   const searchParams = useSearchParams()
   const plannerId = searchParams.get('id')
+  const router = useRouter()
+  const { user, loading: authLoading } = useAuth()
 
   const [planner, setPlanner] = useState<any>(null)
   const [plans, setPlans] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [errorMsg, setErrorMsg] = useState('')
+
+  const fetchLock = useRef(false)
 
   // Folding State
   const [collapsedDays, setCollapsedDays] = useState<number[]>([])
@@ -29,26 +35,97 @@ function ResultContent() {
 
   useEffect(() => {
     if (!plannerId) return
-    fetchData()
+    if (fetchLock.current) return
+    
+    fetchLock.current = true
+    fetchData().finally(() => {
+      fetchLock.current = false
+    })
   }, [plannerId])
 
-  const fetchData = async () => {
-    setLoading(true)
-    const { data: plannerData } = await supabase
-      .from('planner')
-      .select('*')
-      .eq('planner_id', plannerId)
-      .single()
-    const { data: plansData } = await supabase
-      .from('plans')
-      .select('*')
-      .eq('planner_id', plannerId)
-      .order('day')
-      .order('start_time')
+  useEffect(() => {
+    if (authLoading || loading || !planner) return
+    
+    // 현재 접속한 사용자(user)와 플래너 작성자(user_id) 일치 여부 확인
+    if (planner.user_id !== user?.id) {
+      alert('본인이 생성한 플랜만 조회할 수 있습니다.')
+      router.replace('/')
+    }
+  }, [planner, user, authLoading, loading, router])
 
-    setPlanner(plannerData)
-    setPlans(plansData || [])
-    setLoading(false)
+  const fetchData = async () => {
+    try {
+      setLoading(true)
+      setErrorMsg('')
+
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Supabase request timed out after 8s')), 8000)
+      )
+
+      const fetchPromise = async () => {
+        // Retry logic for Web Lock 'stole it' errors due to concurrent auth checks
+        const fetchWithRetry = async (queryFn: () => any, retries = 2) => {
+          for (let i = 0; i < retries; i++) {
+            const res = await queryFn()
+            if (res.error?.message?.includes('stole it') || res.error?.message?.includes('Lock')) {
+              await new Promise(r => setTimeout(r, 400 * (i + 1)))
+              continue
+            }
+            return res
+          }
+          return await queryFn()
+        }
+
+        const pRes = await fetchWithRetry(() => supabase
+          .from('planner')
+          .select('*')
+          .eq('planner_id', plannerId)
+          .single()
+        )
+        
+        if (pRes.error) throw new Error(`Planner fetch error: ${pRes.error.message || JSON.stringify(pRes.error)}`)
+
+        const plannerData = pRes.data
+
+        // 축제 이미지를 가져오기 위해 festivals 테이블 조회
+        if (plannerData.festival_id) {
+          const fRes = await fetchWithRetry(() => supabase
+            .from('festivals')
+            .select('picture')
+            .eq('festival_id', plannerData.festival_id)
+            .single()
+          )
+          
+          if (!fRes.error && fRes.data?.picture) {
+            plannerData.pictureUrl = supabase.storage.from('festival').getPublicUrl(fRes.data.picture).data.publicUrl
+          }
+        }
+
+        const plRes = await fetchWithRetry(() => supabase
+          .from('plans')
+          .select('*')
+          .eq('planner_id', plannerId)
+          .order('day')
+          .order('start_time')
+        )
+
+        if (plRes.error) throw new Error(`Plans fetch error: ${plRes.error.message || JSON.stringify(plRes.error)}`)
+
+        return { plannerData, plansData: plRes.data }
+      }
+
+      const { plannerData, plansData }: any = await Promise.race([fetchPromise(), timeoutPromise])
+
+      setPlanner(plannerData)
+      setPlans(plansData || [])
+    } catch (error: any) {
+      console.error('Error fetching data:', error)
+      setErrorMsg(error.message)
+      setPlanner(null)
+      setPlans([])
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleDelete = async (planId: number) => {
@@ -129,10 +206,29 @@ function ResultContent() {
         플랜 ID가 없습니다.
       </div>
     )
+  if (errorMsg)
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+        <span className="material-symbols-outlined text-4xl text-red-500 mb-2">error</span>
+        <h2 className="text-xl font-bold text-[#171717] mb-2">데이터 로드에 실패했습니다.</h2>
+        <p className="text-neutral-500 mb-6 max-w-md break-keep">
+          상세 오류: {errorMsg}
+        </p>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-6 py-3 bg-primary text-white font-bold rounded-full shadow-lg hover:opacity-90 transition-all"
+        >
+          새로고침
+        </button>
+      </div>
+    )
   if (loading)
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading...
+      <div className="min-h-screen flex items-center justify-center bg-[#f5f5f5]">
+        <div className="flex flex-col items-center">
+          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+          <span className="text-neutral-500 font-bold">데이터를 불러오는 중입니다...</span>
+        </div>
       </div>
     )
   if (!planner)
@@ -177,9 +273,9 @@ function ResultContent() {
             <div className="bg-white p-8 rounded-xl border border-[#ebebeb] shadow-sm sticky top-28">
               <div className="aspect-[4/3] rounded-lg overflow-hidden mb-6">
                 <img
-                  alt="vibrant traditional korean festival with colorful lanterns"
+                  alt="선택한 축제 이미지"
                   className="w-full h-full object-cover"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZqv8pgUBfv4NQ68r894LVsw56erH8K-EQ7-THJ8Am4RpqqmbJA_t7yLCeVbG5KH9GkkGTsxtVEbVD290epNvzgfrxICy7mpkE5hBmaJtno4WGWHUcO81jw3-_YsWUpElwXdgBs45KFtwdI5i-MA-iZZfy-yKOyvxEyMQ_6IHmFq8EWtnKnzlaL8sG8qomhmnoWEqMc3NnNt8lhg_6-rhERoemQzlEQpqwkgqYZuIYwOOaSBDYYfF_QnJ2rT0G9CtR6M5tgL0F03w"
+                  src={planner.pictureUrl || "https://lh3.googleusercontent.com/aida-public/AB6AXuBZqv8pgUBfv4NQ68r894LVsw56erH8K-EQ7-THJ8Am4RpqqmbJA_t7yLCeVbG5KH9GkkGTsxtVEbVD290epNvzgfrxICy7mpkE5hBmaJtno4WGWHUcO81jw3-_YsWUpElwXdgBs45KFtwdI5i-MA-iZZfy-yKOyvxEyMQ_6IHmFq8EWtnKnzlaL8sG8qomhmnoWEqMc3NnNt8lhg_6-rhERoemQzlEQpqwkgqYZuIYwOOaSBDYYfF_QnJ2rT0G9CtR6M5tgL0F03w"}
                 />
               </div>
               <h2 className="text-2xl font-bold mb-6 flex items-center gap-2 text-[#171717]">
@@ -448,7 +544,7 @@ export default function Result() {
     <Suspense
       fallback={
         <div className="min-h-screen flex items-center justify-center text-[#171717] bg-[#f5f5f5]">
-          Loading...
+          <span className="text-neutral-500 font-bold">페이지 준비 중(Suspense)...</span>
         </div>
       }
     >

@@ -48,5 +48,11 @@ export default function MapContainer({ address }: MapContainerProps) {
     })
   }, [])
 
-  return <div ref={mapRef} style={{ width: '100%', height: '256' }} />
+  return (
+    <div
+      className="rounded-lg h-50 w-full object-cover"
+      ref={mapRef}
+      style={{ width: '100%', height: 200 }}
+    />
+  )
 }

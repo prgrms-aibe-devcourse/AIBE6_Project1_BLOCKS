@@ -117,7 +117,7 @@ function FestivalContentSection({ id }: { id: number }) {
         </ul>
       </section>
       <div className="max-w-4xl mx-auto px-6 -mt-10 relative z-10 pb-24">
-        {session?.user?.email != null ? (
+        {session?.user?.email === 'test2@test.com' ? (
           <div className="bg-white rounded-xl shadow-lg border border-outline-variant flex p-1 mb-8">
             <button className="flex-1 py-4 text-sm font-bold text-[#FF7676] bg-secondary-container rounded-lg">
               개요

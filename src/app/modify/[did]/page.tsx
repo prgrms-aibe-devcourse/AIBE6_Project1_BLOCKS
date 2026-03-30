@@ -92,9 +92,11 @@ function modifyFesta() {
           <form onSubmit={(e) => onmodifyFesta(e, blob)}>
             <div className="block">
               <div>
-                <button className="bg-[#FF7676] text-white rounded-full px-8 py-3 font-bold text-sm shadow-lg shadow-primary/30 active:scale-95 transition-transform whitespace-nowrap ml-2">
-                  축제 수정
-                </button>
+                <div className="bg-white rounded-xl shadow-lg border border-outline-variant flex p-1 mb-8">
+                  <button className="bg-[#FF7676] text-white rounded-full px-8 py-3 font-bold text-sm shadow-lg shadow-primary/30 active:scale-95 transition-transform whitespace-nowrap ml-2">
+                    축제 수정
+                  </button>
+                </div>
                 <label htmlFor="profile_pic">
                   <h2 className="text-3xl font-bold text-on-surface">
                     이미지 선택

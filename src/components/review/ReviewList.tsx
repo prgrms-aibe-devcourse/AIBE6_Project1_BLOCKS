@@ -7,7 +7,7 @@ import { EmptyIcon } from "@/components/common/EmptyIcon";
 
 
 interface ReviewProps {
-    festivalId: string,
+    festivalId: number,
     reviews: Review[],
     currentUserId: string,
 }

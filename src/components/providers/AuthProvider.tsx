@@ -81,7 +81,14 @@ export default function AuthProvider({
             setProfile(retryData)
           }
         } else {
-          console.error('Failed to create auto profile:', insertError)
+          // PostgrestError는 console.error에서 {}로 찍힘 → 상세 로깅
+          console.error('Failed to create auto profile:', {
+            message: insertError?.message,
+            code: insertError?.code,
+            details: insertError?.details,
+            hint: insertError?.hint,
+            full: JSON.stringify(insertError),
+          })
           setProfile(null)
         }
       } else {

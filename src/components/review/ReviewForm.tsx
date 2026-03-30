@@ -1,11 +1,61 @@
 "use client";
 
 import { useState } from "react";
+import { buttonVariants } from "../common/Button";
+import { useAuth } from "@/components/providers/AuthProvider";
+import { supabase } from "@/lib/supabase";
 
+interface ReviewFormProps {
+    festivalId: number;
+}
 
-function ReviewForm() {
+function ReviewForm({ festivalId }: ReviewFormProps) {
+    const { user } = useAuth();
     const [content, setContent] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
+    const handleSubmit = async () => {
+        if (!user) {
+            alert("로그인을 먼저 해주세요");
+            return;
+        }
+        if (!content.trim()) {
+            alert("리뷰 내용을 입력해주세요.");
+            return;
+        }
+
+        try {
+            setIsSubmitting(true);
+
+            const { data, error } = await supabase
+                .from('reviews')
+                .insert([
+                    {
+                        festival_id: festivalId,
+                        user_id: user.id,
+                        contents: content,
+                        rating: 5,
+                    }
+                ])
+                .select() // ✅ 추가: 응답을 명시적으로 요청해야 pending 방지
+
+            if (error) {
+                console.error("리뷰 등록 오류:", error.message, error.code);
+                // RLS 오류 시 error.code === '42501'
+                alert(`리뷰 등록에 실패했습니다. (${error.message})`);
+                return;
+            }
+
+            alert("리뷰가 등록되었습니다.");
+            setContent("");
+
+        } catch (error) {
+            console.error("예외 발생:", error);
+            alert(`오류가 발생했습니다: ${error instanceof Error ? error.message : "알 수 없는 오류"}`);
+        } finally {
+            setIsSubmitting(false);
+        }
+    }
 
     return (
         <div className="bg-white border border-[var(--color-border)] rounded-card p-5">
@@ -40,8 +90,11 @@ function ReviewForm() {
 
             {/* 제출 버튼 */}
             <button
-                className="w-full h-10 rounded-pill text-sm font-semibold transition-all">
-                리뷰 등록
+                className={buttonVariants({ variant: "primary", size: "lg", fullWidth: true })}
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+            >
+                {isSubmitting ? "등록 중..." : "리뷰 등록"}
             </button>
         </div>
     )

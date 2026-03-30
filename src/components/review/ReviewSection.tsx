@@ -12,13 +12,17 @@ const CURRENT_USER: Profile = {
     address: '서울',
 }
 
-export default function ReviewSection() {
+interface ReviewSectionProps {
+    festivalId: number;
+}
+
+export default function ReviewSection({ festivalId }: ReviewSectionProps) {
     return (
         <>
             <ReviewHeader reviews={MOCK_REVIEWS} />
-            <ReviewForm />
+            <ReviewForm festivalId={festivalId} />
             <ReviewList
-                festivalId="1"
+                festivalId={festivalId}
                 reviews={MOCK_REVIEWS}
                 currentUserId={CURRENT_USER.user_id}
             />

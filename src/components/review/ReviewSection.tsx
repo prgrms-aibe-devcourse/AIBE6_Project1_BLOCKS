@@ -13,7 +13,7 @@ interface ReviewSectionProps {
 }
 
 export default function ReviewSection({ festivalId }: ReviewSectionProps) {
-    const { user } = useAuth()
+    const { profile } = useAuth()
     const [reviews, setReviews] = useState<Review[]>([])
     const [loading, setLoading] = useState(true)
 
@@ -26,6 +26,7 @@ export default function ReviewSection({ festivalId }: ReviewSectionProps) {
                 author:profiles!reviews_user_id_fkey (
                     user_id,
                     nickname,
+                    picture,
                     address
                 )
             `)
@@ -76,7 +77,7 @@ export default function ReviewSection({ festivalId }: ReviewSectionProps) {
                 <ReviewList
                     festivalId={festivalId}
                     reviews={reviews}
-                    currentUserId={user?.id ?? ''}
+                    currentUserId={profile?.user_id ?? ''}
                     onDeleteReview={handleDeleteReview}
                 />
             )}

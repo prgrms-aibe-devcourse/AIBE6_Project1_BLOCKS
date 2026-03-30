@@ -40,11 +40,11 @@ export default function RootLayout({
       <body className="min-h-screen flex flex-col">
         <AuthProvider>
           <Navbar />
+          <Script
+            src="//dapi.kakao.com/v2/maps/sdk.js?appkey=dc37dc09b327ae5d0055aebf692b7f78&autoload=false&libraries=services"
+            strategy="afterInteractive"
+          />
           <main className="flex-1">
-            <Script
-              src="//dapi.kakao.com/v2/maps/sdk.js?appkey=dc37dc09b327ae5d0055aebf692b7f78&autoload=false&libraries=services"
-              strategy="afterInteractive"
-            />
             <FestivalProvider>{children}</FestivalProvider>
           </main>
           <Footer />

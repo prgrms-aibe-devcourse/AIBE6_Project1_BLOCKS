@@ -1,6 +1,7 @@
 export interface Profile {
   user_id: string;
   nickname: string;
-  image?: string;
+  email: string;
+  picture?: string;
   address?: string;
 }

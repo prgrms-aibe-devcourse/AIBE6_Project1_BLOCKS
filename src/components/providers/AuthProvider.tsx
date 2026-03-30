@@ -44,7 +44,7 @@ export default function AuthProvider({
         .eq('user_id', userId)
         .single()
       if (!error && data) {
-        setProfile(data)
+        setProfile({ ...data, email: authUser?.email || data.email || '' })
       } else if (error?.code === 'PGRST116' && authUser) {
         // 최초 소셜 로그인 등 프로필이 없는 경우 자동 생성
         let baseName = 'User'
@@ -69,7 +69,7 @@ export default function AuthProvider({
           .single()
 
         if (!insertError && newProfile) {
-          setProfile(newProfile)
+          setProfile({ ...newProfile, email: authUser?.email || newProfile.email || '' })
         } else if (insertError?.code === '23505') {
           // 동시성 문제로 이미 다른 요청에서 프로필이 생성된 경우 재조회
           const { data: retryData } = await supabase
@@ -78,7 +78,7 @@ export default function AuthProvider({
             .eq('user_id', userId)
             .single()
           if (retryData) {
-            setProfile(retryData)
+            setProfile({ ...retryData, email: authUser?.email || retryData.email || '' })
           }
         } else {
           // PostgrestError는 console.error에서 {}로 찍힘 → 상세 로깅

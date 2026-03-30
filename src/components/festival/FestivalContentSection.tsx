@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import MapContainer from '@/function/map'
 
-function FestivalContentSection() {
+function FestivalContentSection({ id }: { id: number }) {
   const [festivalName, setFestivalName] = useState<
     {
       festival_id: number
@@ -23,14 +23,12 @@ function FestivalContentSection() {
     }[]
   >([])
   const router = useRouter()
-  const { index } = useParams()
-  const cid = Number(index)
-
+  const cid = Number(id)
   const selectFesta = async () => {
     const { data: festivalName, error } = await supabase
       .from('festivals')
       .select('*')
-      .eq('festival_id', index)
+      .eq('festival_id', id)
     if (error) {
       console.log(error)
     } else {

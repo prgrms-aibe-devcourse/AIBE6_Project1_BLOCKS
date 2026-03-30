@@ -1,9 +1,8 @@
 'use client'
-import { supabase } from '@/lib/supabase'
-import Link from 'next/link'
-import { useState, useEffect } from 'react'
 import FormMain from '@/components/Form/FormMain'
 import FestaList from '@/components/List/FestaList'
+import { supabase } from '@/lib/supabase'
+import { useEffect, useState } from 'react'
 
 function App() {
   const [festivalName, setFestivalName] = useState<
@@ -108,7 +107,7 @@ function App() {
     selectFesta()
   }, [])
   const FestivalListForm = () => {
-    setFestivalName(festivalName)
+    selectFesta()
   }
 
   return (

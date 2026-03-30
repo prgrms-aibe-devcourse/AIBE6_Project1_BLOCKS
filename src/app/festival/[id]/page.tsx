@@ -1,4 +1,4 @@
-'use client'
+"use client"
 import ReviewSection from "@/components/review/ReviewSection"
 import { useParams } from "next/navigation"
 

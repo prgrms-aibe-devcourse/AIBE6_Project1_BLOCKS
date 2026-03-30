@@ -9,7 +9,9 @@ interface ReviewItemProps {
 }
 
 function ReviewItem({ review, currentUserId }: ReviewItemProps) {
-    const isOwner = currentUserId === review.author.user_id;
+    const isOwner = currentUserId === review.author?.user_id;
+    const nickname = review.author?.nickname ?? '알 수 없음';
+    const initial = nickname[0] ?? '?';
 
     return (
         <div className="py-5 border-b border-[var(--color-neutral-100)] last:border-none">
@@ -18,22 +20,22 @@ function ReviewItem({ review, currentUserId }: ReviewItemProps) {
                 <div className="flex items-center gap-2.5">
                     {/* Avatar */}
                     <div className="w-9 h-9 rounded-full bg-[var(--color-primary-light)] flex items-center justify-center shrink-0 overflow-hidden">
-                        {review.author.image ? (
+                        {review.author?.image ? (
                             <img
                                 src={review.author.image}
-                                alt={review.author.nickname}
+                                alt={nickname}
                                 className="w-full h-full object-cover"
                             />
                         ) : (
                             <span className="text-sm font-semibold text-[var(--color-primary)]">
-                                {review.author.nickname[0]}
+                                {initial}
                             </span>
                         )}
                     </div>
 
                     <div className="flex flex-col gap-0.5">
                         <span className="text-sm font-semibold text-[var(--color-neutral-900)]">
-                            {review.author.nickname}
+                            {nickname}
                         </span>
                         <div className="flex items-center gap-2">
                             <StarRating rating={review.rating} size="sm" showValue />

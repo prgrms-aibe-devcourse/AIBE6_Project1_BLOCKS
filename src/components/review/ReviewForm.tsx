@@ -7,9 +7,10 @@ import { supabase } from "@/lib/supabase";
 
 interface ReviewFormProps {
     festivalId: number;
+    onReviewAdded?: () => void;
 }
 
-function ReviewForm({ festivalId }: ReviewFormProps) {
+function ReviewForm({ festivalId, onReviewAdded }: ReviewFormProps) {
     const { user } = useAuth();
     const [content, setContent] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,8 +47,8 @@ function ReviewForm({ festivalId }: ReviewFormProps) {
                 return;
             }
 
-            alert("리뷰가 등록되었습니다.");
             setContent("");
+            onReviewAdded?.(); // 부모의 fetchReviews 재실행 → 목록 즉시 갱신
 
         } catch (error) {
             console.error("예외 발생:", error);

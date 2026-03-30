@@ -32,6 +32,18 @@ function App() {
       e.currentTarget.festivalName.value,
     )
   }
+
+  const selectAllFesta = async (fes: any) => {
+    const { data: festivalName, error } = await supabase
+      .from('festivals')
+      .select('*')
+    if (error) {
+      console.log(error)
+    } else {
+      setFestivalName(festivalName)
+      return festivalName
+    }
+  }
   const selectFesta = async () => {
     const { data: festivalName, error } = await supabase
       .from('festivals')
@@ -117,6 +129,7 @@ function App() {
       <FestaList
         FestivalListForm={FestivalListForm}
         festivalName={festivalName}
+        selectAllFesta={selectFesta}
       />
     </>
   )

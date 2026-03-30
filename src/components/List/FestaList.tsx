@@ -4,9 +4,11 @@ import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import StarRating from '../common/StarRating'
 import { useRouter } from 'next/navigation'
+
 function FestaList({
   FestivalListForm,
   festivalName,
+  selectAllFesta,
 }: {
   FestivalListForm: () => void
   festivalName: {
@@ -23,6 +25,7 @@ function FestaList({
     rating: number
     picture: string
   }[]
+  selectAllFesta: (fes: any) => Promise<any>
 }) {
   const router = useRouter()
   useEffect(() => {
@@ -33,9 +36,9 @@ function FestaList({
 
     return data.publicUrl
   }
-  const FestivalList = () => {
-    FestivalListForm()
-    router.push('/')
+  const refresh = () => {
+    selectAllFesta(festivalName)
+    router.refresh()
   }
 
   return (
@@ -52,7 +55,7 @@ function FestaList({
           </div>
           <button
             className="text-on-surface-variant font-bold text-sm hover:text-primary transition-colors flex items-center gap-1"
-            onClick={() => FestivalList()}
+            onClick={() => refresh()}
           >
             전체보기
             <span

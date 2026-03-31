@@ -1,8 +1,8 @@
 'use client'
+import { getAdminUuid } from '@/actions/admin'
+import { useAuth } from '@/components/providers/AuthProvider'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { Session } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase'
 
 function FormMain({
   onSubmit,
@@ -10,24 +10,23 @@ function FormMain({
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void
 }) {
   const router = useRouter()
+  const { user } = useAuth()
+  const [isAdmin, setIsAdmin] = useState(false)
+
   useEffect(() => {
-    const now = new Date()
-    // 한국 시간: const now = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
-
-    // 2. YYYY-MM-DD 형식으로 변환
-    const today = now.toISOString().split('T')[0]
-
-    // 3. input 요소의 value 설정
-    const dateInput = document.getElementById('Festadate') as HTMLInputElement
-    if (dateInput) {
-      dateInput.value = today
-    }
+    // 아무것도 입력하지 않은 상태(전체 검색)를 지원하기 위해 기본 날짜 설정을 제거합니다.
   }, [])
-  const [session, setSession] = useState<Session | null>(null)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setSession(data.session))
-  }, [session?.user?.email])
+    if (user) {
+      getAdminUuid().then((uuid) => {
+        setIsAdmin(user.id === uuid)
+      })
+    } else {
+      setIsAdmin(false)
+    }
+  }, [user])
+
   const addFesta = () => {
     router.push('/add')
   }
@@ -46,75 +45,76 @@ function FormMain({
           {/* Integrated Search Bar */}
         </div>
 
-        <div className="bg-white p-2 rounded-full shadow-lg border border-outline-variant flex flex-col md:flex-row items-center gap-2 max-w-4xl mx-auto">
-          <div className="flex-1 flex items-center px-6 py-3 min-w-[200px]">
-            <span
-              className="material-symbols-outlined text-on-surface-variant mr-3"
-              data-icon="search"
-            >
-              search
-            </span>
-            <form onSubmit={onSubmit}>
-              <div className="flex flex-wrap md:flex-nowrap items-center gap-2 w-full md:w-auto p-1">
-                <div className="h-8 w-px bg-outline-variant hidden md:block"></div>
-                <div className="flex flex-wrap md:flex-nowrap items-center gap-2 w-full md:w-auto p-1">
-                  <select
-                    id="themeitems"
-                    name="items"
-                    className="bg-transparent rounded-xl border-none text-sm font-bold px-4 py-2 focus:ring-0 cursor-pointer"
-                  >
-                    <option value="모두">테마</option>
-                    <option value="문화">문화/예술</option>
-                    <option value="예술, 음식, 음악">예술, 음식, 음악</option>
-                    <option value="역사, 자연">역사, 자연</option>
-                    <option value="공연, 전통">공연, 전통</option>
-                    <option value="야외, 스포츠">야외, 스포츠</option>
-                  </select>
-                  <div className="h-6 w-px bg-outline-variant hidden md:block"></div>
-                  <select
-                    id="FestaLocation"
-                    className="bg-transparent rounded-xl border-none text-sm font-bold px-4 py-2 focus:ring-0 cursor-pointer"
-                  >
-                    <option value="모두">지역</option>
-                    <option value="서울">서울</option>
-                    <option value="경기">경기도</option>
-                    <option value="강원">강원도</option>
-                    <option value="전라">전라도</option>
-                    <option value="경상">경상도</option>
-                    <option value="제주">제주도</option>
-                    <option value="충청">충청도</option>
-                  </select>
-                  <div className="h-6 w-px bg-outline-variant hidden md:block"></div>
-                  <input
-                    type="date"
-                    id="Festadate"
-                    className="bg-transparent border-none text-sm font-bold px-4 py-2 focus:ring-0 cursor-pointer"
-                  />
-                </div>
-
-                <div className="flex flex-wrap md:flex-nowrap items-center gap-2 w-full md:w-auto p-1">
-                  <input
-                    type="text"
-                    id="festivalName"
-                    placeholder="축제이름을 입력하세요"
-                    className="w-full border-none focus:ring-0 text-sm font-body bg-transparent"
-                  />
-                  <button className="bg-[#FF7676] text-white rounded-full px-8 py-3 font-bold text-sm shadow-lg shadow-primary/30 active:scale-95 transition-transform whitespace-nowrap ml-2">
-                    검색
-                  </button>
-                </div>
-              </div>
-            </form>
-            {session?.user?.email != null ? (
-              <button
-                onClick={addFesta}
-                className="bg-[#FF7676] text-white rounded-full px-8 py-3 font-bold text-sm shadow-lg shadow-primary/30 active:scale-95 transition-transform whitespace-nowrap ml-2"
+        <div className="bg-white p-6 rounded-3xl shadow-sm border border-neutral-200 flex flex-col md:flex-row items-center gap-4 max-w-4xl mx-auto w-full">
+          <div className="flex-1 flex items-center justify-between w-full">
+            <div className="flex items-center flex-1">
+              <span
+                className="material-symbols-outlined text-on-surface-variant mr-4 text-2xl"
+                data-icon="search"
               >
-                축제 추가
-              </button>
-            ) : (
-              ''
-            )}
+                search
+              </span>
+              <form onSubmit={onSubmit} className="flex-1">
+                <div className="flex flex-wrap md:flex-nowrap items-center gap-4 w-full justify-between">
+                  <div className="flex flex-wrap md:flex-nowrap items-center gap-4 shrink-0">
+                    <select
+                      id="themeitems"
+                      name="items"
+                      className="bg-neutral-50 rounded-xl border-none text-sm font-bold px-4 py-3 focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                    >
+                      <option value="모두">테마</option>
+                      <option value="문화/예술">문화/예술</option>
+                      <option value="음식">음식</option>
+                      <option value="음악/공연">음악/공연</option>
+                      <option value="전통/역사">전통/역사</option>
+                      <option value="자연/야외">자연/야외</option>
+                      <option value="스포츠">스포츠</option>
+                    </select>
+                    <div className="h-6 w-px bg-neutral-200 hidden md:block"></div>
+                    <select
+                      id="FestaLocation"
+                      className="bg-neutral-50 rounded-xl border-none text-sm font-bold px-4 py-3 focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                    >
+                      <option value="모두">지역</option>
+                      <option value="서울">서울</option>
+                      <option value="경기">경기도</option>
+                      <option value="강원">강원도</option>
+                      <option value="전라">전라도</option>
+                      <option value="경상">경상도</option>
+                      <option value="제주">제주도</option>
+                      <option value="충청">충청도</option>
+                    </select>
+                    <div className="h-6 w-px bg-neutral-200 hidden md:block"></div>
+                    <input
+                      type="date"
+                      id="Festadate"
+                      className="bg-neutral-50 rounded-xl border-none text-sm font-bold px-4 py-3 focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                    />
+                  </div>
+                  <div className="h-8 w-px bg-neutral-200 hidden md:block"></div>
+                  <div className="flex flex-wrap md:flex-nowrap items-center gap-4 w-full md:flex-1">
+                    <input
+                      type="text"
+                      id="festivalName"
+                      placeholder="축제이름을 입력하세요"
+                      className="w-full bg-neutral-50 rounded-xl border-none focus:ring-2 focus:ring-primary/20 px-4 py-3 text-sm font-body"
+                    />
+                    <button className="bg-primary text-white rounded-xl px-8 py-3 font-bold text-sm shadow-lg shadow-primary/30 active:scale-95 transition-transform shrink-0">
+                      검색
+                    </button>
+                    {isAdmin && (
+                      <button
+                        type="button"
+                        onClick={addFesta}
+                        className="bg-white border-2 border-primary text-primary hover:bg-primary-light rounded-xl px-8 py-3 font-bold text-sm shadow-sm active:scale-95 transition-all shrink-0 ml-2"
+                      >
+                        축제 추가
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       </section>

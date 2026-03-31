@@ -59,60 +59,34 @@ function App() {
     loc: string,
     ffname: string,
   ) => {
-    const newDate = new Date(ddate)
-    const datel = newDate.toISOString()
-    if (op1 != '모두' && loc != '모두') {
-      const { data, error } = await supabase
-        .from('festivals')
-        .select('*')
-        .gte('end_date', datel)
-        .lte('start_date', datel)
-        .like('option1', `%${op1}%`)
-        .like('option2', `%${loc}%`)
-        .like('title', `%${ffname}%`)
-      if (error) {
-        console.log(error)
-      } else {
-        setFestivalName(data)
-      }
-    } else if (op1 != '모두' && loc == '모두') {
-      const { data, error } = await supabase
-        .from('festivals')
-        .select('*')
-        .gte('end_date', datel)
-        .lte('start_date', datel)
-        .like('option1', `%${op1}%`)
-        .like('title', `%${ffname}%`)
-      if (error) {
-        console.log(error)
-      } else {
-        setFestivalName(data)
-      }
-    } else if (op1 == '모두' && loc != '모두') {
-      const { data, error } = await supabase
-        .from('festivals')
-        .select('*')
-        .gte('end_date', datel)
-        .lte('start_date', datel)
-        .like('option2', `${loc}%`)
-        .like('title', `%${ffname}%`)
-      if (error) {
-        console.log(error)
-      } else {
-        setFestivalName(data)
-      }
-    } else if (op1 == '모두' && loc == '모두') {
-      const { data, error } = await supabase
-        .from('festivals')
-        .select('*')
-        .gte('end_date', datel)
-        .lte('start_date', datel)
-        .like('title', `%${ffname}%`)
-      if (error) {
-        console.log(error)
-      } else {
-        setFestivalName(data)
-      }
+    let query = supabase.from('festivals').select('*')
+
+    // 날짜 조건: 입력한 날짜가 축제 기간 안에 포함되도록
+    if (ddate) {
+      query = query.gte('end_date', ddate).lte('start_date', ddate)
+    }
+
+    // 테마 조건
+    if (op1 && op1 !== '모두') {
+      query = query.like('option1', `%${op1}%`)
+    }
+
+    // 지역 조건
+    if (loc && loc !== '모두') {
+      query = query.like('option2', `%${loc}%`)
+    }
+
+    // 제목 조건
+    if (ffname) {
+      query = query.like('title', `%${ffname}%`)
+    }
+
+    const { data, error } = await query
+
+    if (error) {
+      console.error(error)
+    } else {
+      setFestivalName(data || [])
     }
   }
   useEffect(() => {

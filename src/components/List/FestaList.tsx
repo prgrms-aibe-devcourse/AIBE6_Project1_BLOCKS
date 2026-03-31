@@ -1,8 +1,7 @@
 'use client'
 import { supabase } from '@/lib/supabase'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import StarRating from '../common/StarRating'
+import { useState } from 'react'
 
 function FestaList({
   FestivalListForm,
@@ -27,21 +26,32 @@ function FestaList({
   selectAllFesta: (fes: any) => Promise<any>
 }) {
   const router = useRouter()
-  // FestivalListForm은 전체보기 버튼 클릭 시에만 호출되도록 useEffect 제거
+  const [sortOrder, setSortOrder] = useState<'latest' | 'rating'>('latest')
+
   const getImageUrl = (path: string) => {
     const { data } = supabase.storage.from('festival').getPublicUrl(path)
-
     return data.publicUrl
   }
+
   const refresh = () => {
     selectAllFesta(festivalName)
     router.refresh()
   }
 
+  // 데이터 정렬
+  const sortedFestivals = [...festivalName].sort((a, b) => {
+    if (sortOrder === 'latest') {
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    } else {
+      if (b.rating !== a.rating) return b.rating - a.rating
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    }
+  })
+
   return (
     <>
       <section className="py-16 px-8 md:px-12 border-t border-neutral-200 bg-white">
-        <div className="flex justify-between items-end mb-10">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-10">
           <div>
             <span className="text-primary font-bold text-[10px] uppercase tracking-widest mb-2 block">
               Trending Now
@@ -50,33 +60,38 @@ function FestaList({
               지금 가장 뜨거운 축제
             </h2>
           </div>
-          <button
-            className="text-on-surface-variant font-bold text-sm hover:text-primary transition-colors flex items-center gap-1"
-            onClick={() => refresh()}
-          >
-            전체보기
-            <span
-              className="material-symbols-outlined text-sm"
-              data-icon="arrow_forward"
-            >
-              arrow_forward
-            </span>
-          </button>
+          <div className="flex items-center gap-6">
+            <div className="bg-neutral-100 p-1 rounded-xl flex text-sm font-bold shadow-inner">
+              <button
+                onClick={() => setSortOrder('latest')}
+                className={`px-4 py-2 rounded-lg transition-all ${sortOrder === 'latest' ? 'bg-white shadow-sm text-primary' : 'text-neutral-500 hover:text-neutral-700'}`}
+              >
+                최신순
+              </button>
+              <button
+                onClick={() => setSortOrder('rating')}
+                className={`px-4 py-2 rounded-lg transition-all ${sortOrder === 'rating' ? 'bg-white shadow-sm text-primary' : 'text-neutral-500 hover:text-neutral-700'}`}
+              >
+                평점순
+              </button>
+            </div>
+          </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {festivalName.map((item, index) => (
+          {sortedFestivals.map((item) => (
             <ul key={item.festival_id}>
-              <div className="group cursor-pointer">
+              <div
+                className="group cursor-pointer"
+                onClick={() => router.push(`/festival/${item.festival_id}`)}
+              >
                 <div className="relative aspect-[4/5] rounded-2xl overflow-hidden mb-4 shadow-sm group-hover:shadow-xl transition-all duration-300">
-                  <StarRating rating={item.rating} size="md" showValue />
-                  <input type="checkbox" />
                   <img
                     src={getImageUrl(item.picture)}
-                    alt="pic1"
+                    alt={item.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                 </div>
-                <h3 className="text-xl font-bold text-on-surface mb-2">
+                <h3 className="text-xl font-bold text-on-surface mb-2 group-hover:text-primary transition-colors">
                   {item.title}
                 </h3>
                 <div className="flex items-center gap-4 text-on-surface-variant text-sm mb-4">
@@ -100,11 +115,9 @@ function FestaList({
                   </span>
                 </div>
 
-                <Link href={`/festival/${item.festival_id}`}>
-                  <button className="w-full py-3 bg-surface hover:bg-primary-container text-on-surface-variant hover:text-primary font-bold text-sm rounded-xl transition-colors active:scale-95">
-                    상세보기
-                  </button>
-                </Link>
+                <button className="w-full py-3 bg-surface group-hover:bg-primary-container text-on-surface-variant group-hover:text-primary font-bold text-sm rounded-xl transition-colors active:scale-95">
+                  상세보기
+                </button>
               </div>
             </ul>
           ))}

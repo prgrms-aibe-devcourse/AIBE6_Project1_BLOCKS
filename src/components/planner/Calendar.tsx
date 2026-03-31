@@ -63,11 +63,23 @@ export const Calendar = ({
     if (!selectedRange.start || (selectedRange.start && selectedRange.end)) {
       onRangeChange({ start: clickedDate, end: null })
     } else {
+      let start = selectedRange.start
+      let end = clickedDate
+
       if (clickedDate < selectedRange.start) {
-        onRangeChange({ start: clickedDate, end: selectedRange.start })
-      } else {
-        onRangeChange({ start: selectedRange.start, end: clickedDate })
+        start = clickedDate
+        end = selectedRange.start
       }
+
+      const diffTime = end.getTime() - start.getTime()
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+      if (diffDays > 14) {
+        alert('최대 14박 15일까지만 선택 가능합니다.')
+        return
+      }
+
+      onRangeChange({ start, end })
     }
   }
 

@@ -26,10 +26,27 @@ function FestivalContentSection({ id }: { id: number }) {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session))
-  }, [session?.user?.email])
-
+    refresh()
+  }, [])
+  const refresh = () => {
+    selectFesta2(festivalName)
+    router.refresh()
+  }
   const router = useRouter()
   const cid = Number(id)
+
+  const selectFesta2 = async (festivalName: any) => {
+    const { data, error } = await supabase
+      .from('festivals')
+      .select('*')
+      .eq('festival_id', id)
+    if (error) {
+      console.log(error)
+    } else {
+      setFestivalName(data)
+      return festivalName
+    }
+  }
   const selectFesta = async () => {
     const { data: festivalName, error } = await supabase
       .from('festivals')

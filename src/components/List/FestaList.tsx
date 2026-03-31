@@ -30,6 +30,7 @@ function FestaList({
   const router = useRouter()
   useEffect(() => {
     FestivalListForm()
+    refresh()
   }, [])
   const getImageUrl = (path: string) => {
     const { data } = supabase.storage.from('festival').getPublicUrl(path)

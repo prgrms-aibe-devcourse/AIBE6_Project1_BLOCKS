@@ -3,7 +3,13 @@ import Footer from '@/components/layout/Footer'
 import Navbar from '@/components/layout/Navbar'
 import AuthProvider from '@/components/providers/AuthProvider'
 import { FestivalProvider } from '@/context/FestivalContext'
+import type { Metadata } from 'next'
 import Script from 'next/script'
+import { metadata } from './meta'
+import { ReactNode } from 'react'
+import { getServerSession } from 'next-auth/next'
+
+import Providers from '@/components/providers/Provider'
 
 /* ─────────────────────────────────────────────
    Root Layout

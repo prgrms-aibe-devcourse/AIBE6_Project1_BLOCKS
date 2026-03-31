@@ -4,7 +4,7 @@ export interface Comment {
   content: string
   user_id: string
   review_id: string
-  user_name: string
+  nickname: string
   like_count: number
   is_liked: boolean
   parent_id?: string
@@ -20,5 +20,5 @@ export interface DbComment {
   like_count: number
   updated_at?: string | null
   user_id: string
-  user: { user_name: string }[]
+  profiles: { nickname: string }[]
 }

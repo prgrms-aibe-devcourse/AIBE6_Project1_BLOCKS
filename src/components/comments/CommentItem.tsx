@@ -30,7 +30,7 @@ export default function CommentItem({
         <div
           className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${isReply ? 'bg-gray-100 text-gray-400' : 'bg-blue-50 text-blue-400'}`}
         >
-          {comment.user_name[0]}
+          {comment.nickname[0]}
         </div>
         {!isReply && (
           <div className="w-px flex-1 bg-gray-100 my-2 group-last:bg-transparent" />
@@ -42,7 +42,7 @@ export default function CommentItem({
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2">
             <span className="font-bold text-[14px] text-gray-900">
-              {comment.user_name}
+              {comment.nickname}
             </span>
             <span className="text-[12px] text-gray-400">
               {new Date(comment.created_at).toLocaleDateString()}
@@ -127,7 +127,7 @@ export default function CommentItem({
                 onReply(comment.id, text)
                 setShowReplyInput(false)
               }}
-              placeholder={`${comment.user_name}님에게 답글 남기기...`}
+              placeholder={`${comment.nickname}님에게 답글 남기기...`}
             />
           </div>
         )}

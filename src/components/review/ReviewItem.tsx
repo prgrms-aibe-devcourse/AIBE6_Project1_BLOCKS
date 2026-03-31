@@ -27,9 +27,9 @@ function ReviewItem({ review, currentUserId, onDeleteReview }: ReviewItemProps) 
                 <div className="flex items-center gap-2.5">
                     {/* Avatar */}
                     <div className="w-9 h-9 rounded-full bg-[var(--color-primary-light)] flex items-center justify-center shrink-0 overflow-hidden">
-                        {review.author?.image ? (
+                        {review.author?.picture ? (
                             <img
-                                src={review.author.image}
+                                src={review.author.picture}
                                 alt={nickname}
                                 className="w-full h-full object-cover"
                             />

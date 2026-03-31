@@ -1,10 +1,11 @@
 'use client'
-import { supabase } from '@/lib/supabase'
-import Link from 'next/link'
-import React, { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { getAdminUuid } from '@/actions/admin'
+import { useAuth } from '@/components/providers/AuthProvider'
 import MapContainer from '@/function/map'
+import { supabase } from '@/lib/supabase'
 import { Session } from '@supabase/supabase-js'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 function FestivalContentSection({ id }: { id: number }) {
   const [festivalName, setFestivalName] = useState<
     {
@@ -30,6 +31,21 @@ function FestivalContentSection({ id }: { id: number }) {
 
   const router = useRouter()
   const cid = Number(id)
+
+  const { user } = useAuth()
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      if (!user) {
+        setIsAdmin(false)
+        return
+      }
+      const adminUuid = await getAdminUuid()
+      setIsAdmin(user.id === adminUuid)
+    }
+    checkAdmin()
+  }, [user])
   const selectFesta = async () => {
     const { data: festivalName, error } = await supabase
       .from('festivals')
@@ -42,6 +58,8 @@ function FestivalContentSection({ id }: { id: number }) {
     }
   }
   const delFesta = async (did: number) => {
+    const confirmed = confirm('정말 삭제하시겠습니까?')
+    if (!confirmed) return
     const { error } = await supabase
       .from('festivals')
       .delete()
@@ -54,7 +72,6 @@ function FestivalContentSection({ id }: { id: number }) {
   }
   useEffect(() => {
     selectFesta()
-    FestivalListForm()
   }, [])
   const modifyFesta = (did: number) => {
     router.push(`/modify/${did}`)
@@ -67,9 +84,6 @@ function FestivalContentSection({ id }: { id: number }) {
     const { data } = supabase.storage.from('festival').getPublicUrl(path)
 
     return data.publicUrl
-  }
-  const FestivalListForm = () => {
-    setFestivalName(festivalName)
   }
 
   return (
@@ -150,7 +164,7 @@ function FestivalContentSection({ id }: { id: number }) {
                 <h2 className="font-headline text-2xl font-bold mb-6 text-on-surface">
                   축제 소개
                 </h2>
-                <div className="prose prose-zinc max-w-none text-on-surface-variant leading-relaxed space-y-4">
+                <div className="prose prose-zinc max-w-none text-neutral-500 leading-relaxed space-y-4">
                   <p>{item.contents}</p>
                 </div>
                 <div className=" mt-8 grid grid-cols-2 gap-4">

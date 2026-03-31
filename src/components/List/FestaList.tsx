@@ -1,9 +1,8 @@
 'use client'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import React, { useEffect, useState } from 'react'
-import StarRating from '../common/StarRating'
 import { useRouter } from 'next/navigation'
+import StarRating from '../common/StarRating'
 
 function FestaList({
   FestivalListForm,
@@ -28,9 +27,7 @@ function FestaList({
   selectAllFesta: (fes: any) => Promise<any>
 }) {
   const router = useRouter()
-  useEffect(() => {
-    FestivalListForm()
-  }, [])
+  // FestivalListForm은 전체보기 버튼 클릭 시에만 호출되도록 useEffect 제거
   const getImageUrl = (path: string) => {
     const { data } = supabase.storage.from('festival').getPublicUrl(path)
 
@@ -43,7 +40,7 @@ function FestaList({
 
   return (
     <>
-      <section className="py-16 px-8 md:px-12 border-t border-outline-variant bg-white">
+      <section className="py-16 px-8 md:px-12 border-t border-neutral-200 bg-white">
         <div className="flex justify-between items-end mb-10">
           <div>
             <span className="text-primary font-bold text-[10px] uppercase tracking-widest mb-2 block">
@@ -113,7 +110,7 @@ function FestaList({
           ))}
         </div>
       </section>
-      <section className="py-16 px-8 md:px-12 border-t border-outline-variant bg-[#F9FAFB]">
+      <section className="py-16 px-8 md:px-12 border-t border-neutral-200 bg-[#F9FAFB]">
         <div className="mb-10">
           <span className="text-primary font-bold text-[10px] uppercase tracking-widest mb-2 block">
             Curation

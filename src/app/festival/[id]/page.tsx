@@ -1,6 +1,6 @@
 'use client'
-import ReviewSection from '@/components/review/ReviewSection'
 import FestivalContentSection from '@/components/festival/FestivalContentSection'
+import ReviewSection from '@/components/review/ReviewSection'
 import { useParams } from 'next/navigation'
 
 export default function FestivalDetailPage() {

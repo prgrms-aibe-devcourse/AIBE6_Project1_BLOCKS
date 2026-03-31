@@ -1,10 +1,10 @@
 'use client'
 
 import { supabase } from '@/lib/supabase'
+import { Profile } from '@/types/profile'
 import type { User } from '@supabase/supabase-js'
 import { usePathname, useRouter } from 'next/navigation'
 import React, { createContext, useContext, useEffect, useState } from 'react'
-import { Profile } from '@/types/profile'
 
 type AuthContextType = {
   user: User | null
@@ -17,7 +17,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   profile: null,
   loading: true,
-  logout: async () => { },
+  logout: async () => {},
 })
 
 export const useAuth = () => useContext(AuthContext)
@@ -42,10 +42,14 @@ export default function AuthProvider({
         .from('profiles')
         .select('*')
         .eq('user_id', userId)
-        .single()
-      if (!error && data) {
-        setProfile({ ...data, email: authUser?.email || data.email || '' })
-      } else if (error?.code === 'PGRST116' && authUser) {
+        .maybeSingle()
+
+      if (error) {
+        console.error('Fetch profile error:', error)
+        setProfile(null)
+      } else if (data) {
+        setProfile(data)
+      } else if (!data && authUser) {
         // 최초 소셜 로그인 등 프로필이 없는 경우 자동 생성 (Race condition 방지)
         // 이메일 가입자는 signup 페이지에서 수동으로 insert 하므로 제외
         const isKakao = authUser.app_metadata?.provider === 'kakao'
@@ -126,8 +130,15 @@ export default function AuthProvider({
     const initializeAuth = async () => {
       try {
         // OAuth 취소 등으로 인한 복귀 시 Hash 파싱 중 무한 대기하는 Supabase 버그 우회
-        if (typeof window !== 'undefined' && window.location.hash.includes('error=')) {
-          window.history.replaceState(null, '', window.location.pathname + window.location.search)
+        if (
+          typeof window !== 'undefined' &&
+          window.location.hash.includes('error=')
+        ) {
+          window.history.replaceState(
+            null,
+            '',
+            window.location.pathname + window.location.search,
+          )
         }
 
         const {
@@ -204,7 +215,8 @@ export default function AuthProvider({
       }
     } else {
       if (isAuthRequiredRoute) {
-        router.replace('/login')
+        alert('로그인 시 이용할 수 있습니다.')
+        router.replace(`/login?redirect_to=${encodeURIComponent(pathname)}`)
       } else if (isPwdChangeRoute) {
         const hash = window.location.hash
         // 로그인 안 한 사용자도 만료된 토큰으로 접근 시 차단
@@ -250,7 +262,7 @@ export default function AuthProvider({
   // 이로써 카카오 로그인창에서 뒤로가기 시 흔히 발생하는 브라우저 BFCache 무한 펜딩 상태를 원천 차단합니다.
   const isProtectedRoute = pathname
     ? AUTH_REQUIRED_ROUTES.some((route) => pathname.startsWith(route)) ||
-    pathname.startsWith('/pwdchange')
+      pathname.startsWith('/pwdchange')
     : false
 
   if (loading && isProtectedRoute) {

@@ -13,6 +13,14 @@ export default function Login() {
   const router = useRouter()
   const { AuthLayout, AuthHeader, AuthInput, AuthButton } = useAuthUI()
 
+  const getRedirectPath = () => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      return params.get('redirect_to') || '/'
+    }
+    return '/'
+  }
+
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setLoading(true)
@@ -26,7 +34,7 @@ export default function Login() {
         throw error
       }
 
-      router.push('/')
+      router.push(getRedirectPath())
     } catch (error) {
       console.error('Login error:', error)
       alert('로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.')
@@ -40,7 +48,7 @@ export default function Login() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/`,
+          redirectTo: `${window.location.origin}${getRedirectPath()}`,
         },
       })
 

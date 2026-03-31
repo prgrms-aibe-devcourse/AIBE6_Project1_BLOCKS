@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import StarRating from '../common/StarRating'
-
+import { useEffect } from 'react'
 function FestaList({
   FestivalListForm,
   festivalName,
@@ -27,7 +27,10 @@ function FestaList({
   selectAllFesta: (fes: any) => Promise<any>
 }) {
   const router = useRouter()
-  // FestivalListForm은 전체보기 버튼 클릭 시에만 호출되도록 useEffect 제거
+  useEffect(() => {
+    FestivalListForm()
+    refresh()
+  }, [])
   const getImageUrl = (path: string) => {
     const { data } = supabase.storage.from('festival').getPublicUrl(path)
 

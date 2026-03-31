@@ -27,25 +27,27 @@ function FestivalContentSection({ id }: { id: number }) {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session))
-  }, [session?.user?.email])
-
+    refresh()
+  }, [])
+  const refresh = () => {
+    selectFesta2(festivalName)
+    router.refresh()
+  }
   const router = useRouter()
   const cid = Number(id)
 
-  const { user } = useAuth()
-  const [isAdmin, setIsAdmin] = useState(false)
-
-  useEffect(() => {
-    const checkAdmin = async () => {
-      if (!user) {
-        setIsAdmin(false)
-        return
-      }
-      const adminUuid = await getAdminUuid()
-      setIsAdmin(user.id === adminUuid)
+  const selectFesta2 = async (festivalName: any) => {
+    const { data, error } = await supabase
+      .from('festivals')
+      .select('*')
+      .eq('festival_id', id)
+    if (error) {
+      console.log(error)
+    } else {
+      setFestivalName(data)
+      return festivalName
     }
-    checkAdmin()
-  }, [user])
+  }
   const selectFesta = async () => {
     const { data: festivalName, error } = await supabase
       .from('festivals')

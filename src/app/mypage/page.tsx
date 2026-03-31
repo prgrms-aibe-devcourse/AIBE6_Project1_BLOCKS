@@ -10,7 +10,7 @@ function MyPage() {
   const { user, profile, loading } = useAuth()
 
   // 로딩 상태 처리
-  if (loading) {
+  if (loading || (user && !profile)) {
     return (
       <div className="flex flex-col items-center justify-center h-[70vh]">
         <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
@@ -50,7 +50,7 @@ function MyPage() {
 
   return (
     <div className="flex flex-col gap-4 w-full mx-auto max-w-3xl px-4 py-8 animate-fade-in">
-      <AccountSection profile={profile} />
+      <AccountSection profile={profile} user_email={user.user_metadata.email} />
       <SavedPlansSection />
       <MyReviewSection />
       <AccountDangerSection />

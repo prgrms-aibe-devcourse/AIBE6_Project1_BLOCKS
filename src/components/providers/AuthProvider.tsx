@@ -17,7 +17,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   profile: null,
   loading: true,
-  logout: async () => {},
+  logout: async () => { },
 })
 
 export const useAuth = () => useContext(AuthContext)
@@ -262,7 +262,7 @@ export default function AuthProvider({
   // 이로써 카카오 로그인창에서 뒤로가기 시 흔히 발생하는 브라우저 BFCache 무한 펜딩 상태를 원천 차단합니다.
   const isProtectedRoute = pathname
     ? AUTH_REQUIRED_ROUTES.some((route) => pathname.startsWith(route)) ||
-      pathname.startsWith('/pwdchange')
+    pathname.startsWith('/pwdchange')
     : false
 
   if (loading && isProtectedRoute) {

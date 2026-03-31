@@ -8,11 +8,12 @@ import { Profile } from "@/types/profile"
 
 interface AccountSectionProps {
     profile: Profile
+    user_email: string
 }
 
-function AccountSection({ profile }: AccountSectionProps) {
+function AccountSection({ profile, user_email }: AccountSectionProps) {
     const [nickname, setNickname] = useState(profile.nickname)
-    const [email, setEmail] = useState(profile.email)
+    const [email, setEmail] = useState(user_email)
     const [pendingFile, setPendingFile] = useState<File | null>(null) //선택됐지만 아직 업로드 안 된 파일
     const [preview, setPreview] = useState<string | null>(null) //로컬 미리보기 URL
     const [picture, setPicture] = useState(profile.picture)
@@ -22,8 +23,8 @@ function AccountSection({ profile }: AccountSectionProps) {
     useEffect(() => {
         if (profile.nickname) setNickname(profile.nickname)
         if (profile.picture) setPicture(profile.picture)
-        setEmail(profile.email)
-    }, [profile.nickname, profile.picture, profile.email])
+        setEmail(user_email)
+    }, [profile.nickname, profile.picture, user_email])
 
     // 로컬 ObjectURL 메모리 누수 방지
     useEffect(() => {
@@ -139,7 +140,7 @@ function AccountSection({ profile }: AccountSectionProps) {
                         <div className="flex flex-col gap-1">
                             <label className="text-xs text-[var(--color-neutral-500)]">이메일</label>
                             <input
-                                value={profile.email}
+                                value={email}
                                 readOnly
                                 className="h-10 px-3 rounded-[var(--radius-md)] border border-[var(--color-border)] text-sm text-[var(--color-neutral-500)] bg-[var(--color-neutral-50)] cursor-not-allowed"
                             />

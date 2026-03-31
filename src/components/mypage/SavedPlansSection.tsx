@@ -8,6 +8,8 @@ import { SectionHeader } from '@/components/common/SectionHeader'
 import { Badge } from '@/components/common/Badge'
 import { Button } from '@/components/common/Button'
 import { useRouter } from 'next/navigation'
+import { getImageUrl } from '@/utils/getImageUrl'
+import { formatDate } from '@/utils/formatDate'
 
 interface PlanWithFestival {
     planner_id: number
@@ -28,12 +30,6 @@ function calcDday(startDate: string): number | null {
     return diff >= 0 ? diff : null  // 지난 플랜은 null
 }
 
-/* 날짜 포맷 */
-function formatDate(date: string) {
-    return new Date(date).toLocaleDateString('ko-KR', {
-        year: 'numeric', month: '2-digit', day: '2-digit'
-    }).replace(/\. /g, '.').replace(/\.$/, '')
-}
 
 function SavedPlansSection() {
     const router = useRouter()
@@ -120,7 +116,7 @@ function SavedPlansSection() {
                         >
                             <div className="relative h-[120px] overflow-hidden">
                                 <img
-                                    src={plan.festival?.picture ?? '/placeholder.png'}
+                                    src={plan.festival?.picture ? getImageUrl(plan.festival.picture) : '/placeholder.png'}
                                     alt={plan.title}
                                     className="w-full h-full object-cover group-hover:scale-105 transition-base"
                                 />
